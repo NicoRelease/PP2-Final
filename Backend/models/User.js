@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const BCRYPT_SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS || 10, 10);
+console.log('Valor de la variable de ambiente BCRYPT_SALT_ROUNDS:', process.env.BCRYPT_SALT_ROUNDS);
+console.log('BCRYPT_SALT_ROUNDS en User model:', BCRYPT_SALT_ROUNDS);
 
 export default (sequelize) => {
     const User = sequelize.define('User', {
@@ -42,10 +44,7 @@ export default (sequelize) => {
         // ===============================================
         hooks: {
             // Este gancho se ejecuta ANTES de que se cree o se actualice un registro.
-            beforeCreate: async (user) => {
-                const hashedPassword = await bcrypt.hash(user.password, BCRYPT_SALT_ROUNDS);
-                user.password = hashedPassword;
-            },
+           
             beforeUpdate: async (user) => {
                 // Solo si la contraseña ha sido modificada, la volvemos a hashear
                 if (user.changed('password')) {
@@ -64,5 +63,12 @@ export default (sequelize) => {
         return await bcrypt.compare(password, this.password);
     };
 
+    // Asociación con Sesion (uno a muchos)
+    User.associate = function(models) {
+        User.hasMany(models.Sesion, { foreignKey: 'user_id', as: 'sesiones' });
+    };
+
     return User;
+
+    
 };

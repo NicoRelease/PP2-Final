@@ -12,8 +12,11 @@ const NewSessionForm = ({ onSesionCreada }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // Nuevo estado para el mensaje de éxito, reemplazando el uso de alert()
+  const [successMessage, setSuccessMessage] = useState(null); 
 
-  const API_BASE_URL = 'http://localhost:3001/api';
+  // URL Base al puerto del backend. Usaremos '/sesiones' en el POST.
+  const API_BASE_URL = 'http://localhost:3000/api';
 
   const handleChange = (e) => {
     const name = e.target.name;
@@ -30,6 +33,7 @@ const NewSessionForm = ({ onSesionCreada }) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccessMessage(null); // Limpiar mensaje de éxito al empezar
     
     // Validación básica
     if (formData.duracion_diaria_estimada < 10) {
@@ -38,11 +42,29 @@ const NewSessionForm = ({ onSesionCreada }) => {
       return;
     }
 
+    // 🔑 1. OBTENER EL TOKEN JWT (Corrección del error 500)
+    const authToken = localStorage.getItem('authToken');
+    
+    if (!authToken) {
+        setError("No autorizado. Token no encontrado. Por favor, inicia sesión.");
+        setLoading(false);
+        return;
+    }
+
     try {
       console.log('📤 Enviando datos:', formData); 
       
+      // 🔑 2. CONFIGURAR HEADERS CON EL TOKEN
+      const config = {
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}` // Adjuntar el token en formato Bearer
+          }
+      };
+      
       // El backend ahora calculará duracion_total_estimada
-      const response = await axios.post(`${API_BASE_URL}/`, formData);
+      // 🔑 3. USAR EL ENDPOINT CORRECTO (/api/sesiones) Y LA CONFIGURACIÓN CON EL TOKEN
+      const response = await axios.post(`${API_BASE_URL}/sesiones`, formData, config);
 
       console.log('✅ Sesión creada:', response.data);
       
@@ -52,25 +74,27 @@ const NewSessionForm = ({ onSesionCreada }) => {
         const nombreSesion = response.data.sesion.nombre;
         const tareasCreadas = response.data.tareasCreadas || response.data.sesion.tareas?.length || 0;
         const totalMinutos = response.data.sesion.duracion_total_estimada;
-        //mensajeExito = `✅ Sesión '${nombreSesion}' (${totalMinutos} min total) planificada con éxito! Se crearon ${tareasCreadas} tareas.`;
+        mensajeExito = `✅ Sesión '${nombreSesion}' (${totalMinutos} min total) planificada con éxito! Se crearon ${tareasCreadas} tareas.`;
       } else if (response.data.nombre) {
-        //mensajeExito = `✅ Sesión '${response.data.nombre}' creada exitosamente!`;
+        mensajeExito = `✅ Sesión '${response.data.nombre}' creada exitosamente!`;
       }
       
-      alert(mensajeExito);
+      // 🔑 4. Reemplazar alert() por la actualización del estado
+      setSuccessMessage(mensajeExito);
       
       if (onSesionCreada) {
         onSesionCreada(response.data);
       }
 
       setFormData({ nombre: '', fecha_examen: '', duracion_diaria_estimada: 60 });
-      navigate('/gestor-estudio');
-
+      // navigate('/gestor-estudio'); // Puedes descomentar esto si quieres que redirija
+      
     } catch (error) {
       console.error("❌ Error al planificar:", error);
       let errorMsg = 'Error al planificar la sesión';
       if (error.response) {
-        errorMsg = error.response.data.message || errorMsg;
+        // Si el backend envía el error de autenticación (401), se captura aquí.
+        errorMsg = error.response.data.error || error.response.data.message || errorMsg;
       } else if (error.request) {
         errorMsg = 'No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose.';
       } else {
@@ -89,16 +113,16 @@ const NewSessionForm = ({ onSesionCreada }) => {
   const fechaMinima = obtenerFechaMinima();
 
   return (
-    <>
-                <header style={{ backgroundColor: '#007bff', color: 'white', padding: '15px', textAlign: 'center', marginBottom: '30px' }}>
-                    <h1>🧠 App de gestion de estudio personalizado</h1>
-                        <Link to="/" style={{ color: 'white', margin: '0 20px', textDecoration: 'none', fontWeight: 'bold' }}>
-                                     🏠 Inicio
-                                   </Link>
-                        <Link to="/gestor-estudio" style={{ color: 'white', margin: '0 20px', textDecoration: 'none', fontWeight: 'bold' }}>
-                                     📊 Gestor de Estudio
-                                   </Link>
-                  </header>
+    <>
+                <header style={{ backgroundColor: '#007bff', color: 'white', padding: '15px', textAlign: 'center', marginBottom: '30px' }}>
+                    <h1>🧠 App de gestion de estudio personalizado</h1>
+                        <Link to="/" style={{ color: 'white', margin: '0 20px', textDecoration: 'none', fontWeight: 'bold' }}>
+                                     🏠 Inicio
+                                   </Link>
+                        <Link to="/gestor-estudio" style={{ color: 'white', margin: '0 20px', textDecoration: 'none', fontWeight: 'bold' }}>
+                                     📊 Gestor de Estudio
+                                   </Link>
+                  </header>
     <div style={{ 
       padding: '30px', 
       border: '2px solid #007bff', 
@@ -112,6 +136,20 @@ const NewSessionForm = ({ onSesionCreada }) => {
         📝 Crear Nueva Sesión de Estudio
       </h3>
       
+      {successMessage && (
+        <div style={{
+          backgroundColor: '#d4edda',
+          color: '#155724',
+          padding: '10px',
+          borderRadius: '5px',
+          marginBottom: '20px',
+          border: '1px solid #c3e6cb',
+            fontWeight: 'bold'
+        }}>
+          <strong>🎉 Éxito:</strong> {successMessage}
+        </div>
+      )}
+
       {error && (
         <div style={{
           backgroundColor: '#f8d7da',
@@ -232,7 +270,7 @@ const NewSessionForm = ({ onSesionCreada }) => {
         </div>
       </form>
     </div>
-    </>
+    </>
   );
 };
 

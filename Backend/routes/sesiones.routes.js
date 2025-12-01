@@ -15,7 +15,7 @@ const router = express.Router();
 router.post('/validar-fecha', sesionesController.validarFechaExamen);
 
 // 1. CREAR una nueva sesión con sus tareas
-router.post('/', sesionesController.crearSesion);
+router.post('/sesiones', protect, sesionesController.crearSesion);
 
 // 2. OBTENER todas las sesiones con sus tareas
 router.get('/', sesionesController.obtenerTodasLasSesiones);

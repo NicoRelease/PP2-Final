@@ -22,7 +22,7 @@ export default (sequelize) => {
 
     // Asociación con Sesion (muchos a uno)
     Tarea.associate = function(models) {
-        Tarea.belongsTo(models.Sesion, { foreignKey: 'sesion_id', as: 'sesion' });
+        Tarea.belongsTo(models.Sesion, { foreignKey: 'sesion_id', as: 'sesiones' });
     };
 
     return Tarea;

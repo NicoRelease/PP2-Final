@@ -14,7 +14,7 @@ const GestorEstudio = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const API_BASE_URL = 'http://localhost:3001/api';
+  const API_BASE_URL = 'http://localhost:3000/api';
 
   // Función para cargar datos
   const fetchSesiones = async () => {
@@ -133,7 +133,7 @@ const GestorEstudio = () => {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
         <p>No hay sesiones planificadas.</p>
-        <button onClick={() => navigate('/')}>Crear primera sesión</button>
+        <button onClick={() => navigate('/crear-sesion')}>Crear primera sesión</button>
       </div>
     );
   }

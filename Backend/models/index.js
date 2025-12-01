@@ -6,6 +6,8 @@ import UserModel from './User.js';
 import SesionModel from './Sesion.js';
 import TareaModel from './Tarea.js';
 import LogModel from './Log.js';
+// 1. Importa la función de asociaciones
+import defineAssociations from './associations.js';
 
 const db = {};
 
@@ -24,8 +26,10 @@ console.log('🔗 Modelo Log cargado y asociado a Sequelize.');
 
 
 // 3. Definir las Asociaciones (Relaciones)
+// **¡LÍNEA DE CÓDIGO CLAVE!** Ejecuta la función para definir todas las relaciones.
+defineAssociations(db);
+console.log('🤝 Asociaciones definidas entre los modelos.');
 
-// ... (El código de hasMany y belongsTo va aquí, no necesita logs) ...
 
 // 4. Exportar los objetos clave
 db.sequelize = sequelize; 
