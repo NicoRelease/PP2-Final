@@ -46,7 +46,7 @@ router.delete('/tareas/:id', sesionesController.eliminarTarea);
 router.get('/tareas/:id', sesionesController.obtenerTareaPorId);
 
 // 10. Aplicamos el middleware 'protect' justo antes del controlador
-router.get('/', protect, sesionesController.obtenerTodasLasSesionesUsuario);
+router.get('/:user_id', protect, sesionesController.obtenerTodasLasSesionesUsuario);
 
 // 12. OBTENER una sesión específica por ID
 router.get('/:id', protect, sesionesController.obtenerSesionPorId);

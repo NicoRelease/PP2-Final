@@ -7,6 +7,7 @@ export default (sequelize) => {
         user_id: { type: DataTypes.INTEGER, allowNull: false }, // Clave foránea
         nombre: { type: DataTypes.STRING, allowNull: false },
         fecha_examen: { type: DataTypes.DATEONLY, allowNull: true },
+        duracion_total_estimada: { type: DataTypes.INTEGER, allowNull: false },
         es_completada: { type: DataTypes.BOOLEAN, defaultValue: false },
         creado_en: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
         actualizado_en: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }

@@ -21,7 +21,7 @@ const TareaManager = () => {
   const [intervalId, setIntervalId] = React.useState(null);
   const [modo, setModo] = React.useState('tarea-especifica');
 
-  const API_BASE_URL = 'http://localhost:3001/api';
+  const API_BASE_URL = 'http://localhost:3000/api';
 
   const cargarTareaDelDia = async () => {
     setLoading(true);
@@ -29,7 +29,7 @@ const TareaManager = () => {
     
     try {
       const response = await axios.get(`${API_BASE_URL}/tarea-del-dia/actual`);
-
+      console.log("Tarea del día actual-cargada:", response.data);
       if (response.data.tieneSesiones && response.data.tarea) {
         setTarea(response.data.tarea);
         setSesion(response.data.sesion);
@@ -53,6 +53,7 @@ const TareaManager = () => {
         setLoading(true);
         try {
           const response = await axios.get(`${API_BASE_URL}/tareas/${tareaId}`);
+          console.log("Tarea específica por ID cargada:", response.data);
           setTarea(response.data);
           setSesion(response.data.sesion);
           setModo('tarea-especifica');
@@ -113,6 +114,7 @@ const TareaManager = () => {
           : 0;
       
       const response = await axios.post(`${API_BASE_URL}/tareas/${tarea.id}/gestionar`, {
+       
         action: accion,
         tiempo_ejecutado: tiempoEjecutado
       });
