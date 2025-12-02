@@ -42,6 +42,9 @@ export default function Login() {
   const handleLogin = (data) => {
     // Lógica para manejar el inicio de sesión exitoso
     console.log("Login exitoso, token:", data.token);
+    UserId = data.userId;
+    localStorage.setItem('Userid', UserId);
+    console.log("UserId guardado en localStorage:", UserId);
     
     // 🔥 CORRECCIÓN CLAVE: Guardar el token en localStorage
     if (data.token) {
