@@ -24,6 +24,7 @@ export default function Login() {
   const [errorMessage, setErrorMessage] = useState(""); // Estado para mensajes de error
 
   const secretKey = 'clave-secreta-256bits';
+  let UserId = null;
 
   // Función de Encriptación / Codificación
   const encrypt = (text) => {
