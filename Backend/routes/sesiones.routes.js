@@ -18,7 +18,7 @@ router.post('/validar-fecha', sesionesController.validarFechaExamen);
 router.post('/sesiones', protect, sesionesController.crearSesion);
 
 // 2. OBTENER todas las sesiones con sus tareas
-router.get('/', sesionesController.obtenerTodasLasSesiones);
+router.get('/sesiones/:UserId', protect, sesionesController.obtenerTodasLasSesionesUsuario);
 
 // 3. OBTENER una sesión específica por ID
 router.get('/:id', sesionesController.obtenerSesionPorId);
@@ -46,7 +46,7 @@ router.delete('/tareas/:id', sesionesController.eliminarTarea);
 router.get('/tareas/:id', sesionesController.obtenerTareaPorId);
 
 // 10. Aplicamos el middleware 'protect' justo antes del controlador
-router.get('/:user_id', protect, sesionesController.obtenerTodasLasSesionesUsuario);
+//router.get('/:user_id', protect, sesionesController.obtenerTodasLasSesionesUsuario);
 
 // 12. OBTENER una sesión específica por ID
 router.get('/:id', protect, sesionesController.obtenerSesionPorId);

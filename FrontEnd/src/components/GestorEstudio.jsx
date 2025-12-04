@@ -13,16 +13,31 @@ const GestorEstudio = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
+  const authToken = localStorage.getItem('authToken');
+console.log('Auth Token en GestorEstudio:', authToken);
   const API_BASE_URL = 'http://localhost:3000/api';
 
   // Función para cargar datos
   const fetchSesiones = async () => {
     setLoading(true);
     setError(null);
+
+if (!authToken) {
+        console.error('❌ Token de autenticación no encontrado. Redirigiendo a login.');
+        navigate('/Login'); 
+        setError('No autorizado. Por favor, inicia sesión.');
+        setLoading(false);
+        return; 
+    }
+  const config = {
+        headers: {
+            'Authorization': `Bearer ${authToken}` // Formato estándar JWT
+        }
+    };
+
     try {
       console.log('🔍 Iniciando carga de sesiones...');
-      const response = await axios.get(`${API_BASE_URL}/`);
+      const response = await axios.get(`${API_BASE_URL}/sesiones/${localStorage.getItem('UserId')}`, config);
       console.log('📦 Respuesta recibida:', response.data);
       setData(response.data);
     } catch (err) {
@@ -97,6 +112,7 @@ const GestorEstudio = () => {
     console.log(`🎯 Gestionando tarea ${tareaId} con acción: ${action}`);
     try {
       const response = await axios.post(`${API_BASE_URL}/tareas/${tareaId}/gestionar`, {
+        config,
         action: action,
         tiempo_ejecutado: 30
       });

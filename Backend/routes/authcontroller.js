@@ -63,10 +63,11 @@ console.log('Usuario encontrado en DB:', user ? user.toJSON() : null);  
         // 🔑 CORRECCIÓN CRÍTICA: Comparar la contraseña de texto plano (passwordlog)
         // contra el HASH de la DB (user.password). NO desencriptar el hash.
         if (user && (await bcrypt.compare(passwordlog, user.password))) {
+        console.log('Credenciales válidas para el usuario:', user.username, user.email);
             const token = generateToken(user.id);
-            
+            console.log('Token JWT generado:', token);
             return res.status(200).json({ 
-                message: "Login exitoso",
+                message: "Login exitoso con mensaje del backend",
                 user: { id: user.id, username: user.username, email: user.email },
                 token: token
             });
