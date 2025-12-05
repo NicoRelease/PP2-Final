@@ -24,13 +24,15 @@ const diasEntre = (start, end) => {
 // --- CRUD BÁSICO DE SESIONES ---
 
 export const obtenerTodasLasSesionesUsuario = async (req, res) => {
+    console.log("🔍 Obtener todas las sesiones para el usuario solicitado", req.user.id);
+    const user_id = req.user.id;
     // 🔑 USANDO req.user.id para filtrar solo las sesiones del usuario autenticado
-    const userId = req.user.id; 
+    //const { user_Id: userId } = req.params; 
     
     try {
         const sesiones = await Sesion.findAll({
             where: {
-                user_id: userId // Aseguramos que solo vea sus propias sesiones
+                user_id: user_id // Aseguramos que solo vea sus propias sesiones
             },
             include: [{ model: Tarea, as: 'tareas' }], // Incluido para ser más útil
             order: [
@@ -47,12 +49,11 @@ export const obtenerTodasLasSesionesUsuario = async (req, res) => {
 };
 
 export const crearSesion = async (req, res) => {
-    const { nombre, fecha_examen, duracion_diaria_estimada, dificultad_por_defecto = 3 } = req.body;
-    const userId = req.user.id; // Asumimos que viene del middleware de autenticación
-
-    if (!nombre || !fecha_examen || !duracion_diaria_estimada) {
+    const { user_id, nombre, fecha_examen, duracion_diaria_estimada } = req.body;
+    console.log("📥 Datos recibidos para crear sesión:", req.body);
+    if (!user_id || !nombre || !fecha_examen || !duracion_diaria_estimada) {
         return res.status(400).json({
-            message: "Faltan campos obligatorios: nombre, fecha_examen, duracion_diaria_estimada"
+            message: "Faltan campos obligatorios: user_id, nombre, fecha_examen, duracion_diaria_estimada"
         });
     }
     
@@ -75,13 +76,13 @@ export const crearSesion = async (req, res) => {
         const duracionTotalEstimada = duracion_diaria_estimada * diasDisponibles;
 
         const nuevaSesion = await Sesion.create({
+            user_id,
             nombre,
             fecha_examen: fechaExamenDate,
             duracion_diaria_estimada: duracion_diaria_estimada,
             duracion_total_estimada: duracionTotalEstimada,
             es_completada: false,
             fecha_programada: fechaInicio,
-            user_id: userId // ⬅️ VINCULACIÓN AL USUARIO
         }, { transaction: t });
 
         let tiempoRestante = duracionTotalEstimada;
@@ -101,7 +102,6 @@ export const crearSesion = async (req, res) => {
                 nombre: `Tarea Día ${i + 1} de ${nombre}`, 
                 fecha_programada: new Date(fechaActual).toISOString().split('T')[0],
                 duracion_estimada: duracionProgramada,
-                dificultad_nivel: dificultad_por_defecto,
                 es_completada: false,
             });
 

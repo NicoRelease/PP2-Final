@@ -24,7 +24,8 @@ export default function Login() {
   const [errorMessage, setErrorMessage] = useState(""); // Estado para mensajes de error
 
   const secretKey = 'clave-secreta-256bits';
-  let UserId = null;
+  
+
 
   // Función de Encriptación / Codificación
   const encrypt = (text) => {
@@ -32,8 +33,7 @@ export default function Login() {
     // Si no está (lo más probable en este entorno), usamos Base64 (NO SEGURO).
     // ⚠️ Advertencia: Si el backend espera AES, el login fallará.
     if (typeof CryptoJS !== 'undefined' && CryptoJS.AES) {
-        console.log("Usando encriptación AES real (CryptoJS encontrado).");
-        return CryptoJS.AES.encrypt(text, secretKey).toString(); 
+        return CryptoJS.AES.encrypt(text, secretKey).toString(); 
     }
     
     console.error("❌ Encriptación AES no disponible. Usando Base64 (¡NO SEGURO!).");
@@ -42,15 +42,15 @@ export default function Login() {
 
   const handleLogin = (data) => {
     // Lógica para manejar el inicio de sesión exitoso
-    console.log("Login exitoso, token:", data.token);
-    UserId = data.userId;
-    localStorage.setItem('Userid', UserId);
-    console.log("UserId guardado en localStorage:", UserId);
-    
+
+    console.log("Login exitoso, data:", data);
+        
     // 🔥 CORRECCIÓN CLAVE: Guardar el token en localStorage
     if (data.token) {
         localStorage.setItem('authToken', data.token);
-        console.log("Token guardado en localStorage.");
+        localStorage.setItem('UserId', data.user.id);
+      
+        
     } else {
         console.warn("Login exitoso, pero no se recibió token en la respuesta.");
     }
@@ -87,10 +87,17 @@ export default function Login() {
       });
 
       const data = await response.json();
-
+       
       if (response.ok && data.token) {
         // Llamada a la función de manejo de éxito, que ahora guarda el token
         handleLogin({ token: data.token, user: loginUser });
+ console.log('Respuesta del servidor:', data);
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('UserId', data.user.id);
+        console.log("Token guardado en localStorage luego del post-login.", localStorage.getItem('authToken'));
+        console.log("UserId guardado en localStorage luego del post-login.", localStorage.getItem('UserId'));
+        
+ 
         return;
       }
       

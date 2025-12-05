@@ -8,7 +8,6 @@ export default (sequelize) => {
         nombre: { type: DataTypes.STRING, allowNull: false },
         fecha_programada: { type: DataTypes.DATEONLY, allowNull: false },
         duracion_estimada: { type: DataTypes.INTEGER, defaultValue: 60 },
-        dificultad_nivel: { type: DataTypes.INTEGER },
         tiempo_total_requerido: { type: DataTypes.INTEGER, defaultValue: 0 },
         tiempo_real_ejecucion: { type: DataTypes.INTEGER, defaultValue: 0 },
         es_completada: { type: DataTypes.BOOLEAN, defaultValue: false },

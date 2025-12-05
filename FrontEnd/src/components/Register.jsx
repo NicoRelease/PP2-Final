@@ -49,7 +49,9 @@ console.log ('Datos recibidos:', data);
                 console.log('Registro exitoso:', data);
                 
                 // 4. Guardar token y redirigir al área protegida
-                localStorage.setItem('token', data.token);
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('UserId', data.user.id);
+                console.log('Info de LocalStorage: ', localStorage);
                 // navigate('/crear-sesion'); // Redirige a la página principal de la app
                 alert('Registro exitoso! Serás redirigido a Crear Sesión.');
                 navigate('/crear-sesion');

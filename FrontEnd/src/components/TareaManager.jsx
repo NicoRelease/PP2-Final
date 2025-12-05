@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import Conversion from './Conversion';
+import Header from './Header';
 
 
 const TareaManager = () => {
@@ -207,18 +208,7 @@ const TareaManager = () => {
 
   return (
     <>
-         <header style={{ backgroundColor: '#007bff', color: 'white', padding: '15px', textAlign: 'center', marginBottom: '30px' }}>
-          <h1>🧠 App de gestion de estudio personalizado</h1>
-          <Link to="/" style={{ color: 'white', margin: '0 20px', textDecoration: 'none', fontWeight: 'bold' }}>
-              🏠 Inicio
-            </Link>
-            <Link to="/crear-sesion" style={{ color: 'white', margin: '0 20px', textDecoration: 'none', fontWeight: 'bold' }}>
-              ✍️ Planificar Sesión
-            </Link>
-            <Link to="/gestor-estudio" style={{ color: 'white', margin: '0 20px', textDecoration: 'none', fontWeight: 'bold' }}>
-              📊 Gestor de Estudio
-            </Link>
-        </header>
+         <Header />
 
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <div style={{

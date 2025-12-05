@@ -6,7 +6,8 @@ import { useNavigate,Link } from 'react-router-dom';
 const NewSessionForm = ({ onSesionCreada }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    nombre: '',
+    user_id: localStorage.getItem('UserId') || null,
+    nombre: '',
     fecha_examen: '',
     duracion_diaria_estimada: 60,
   });

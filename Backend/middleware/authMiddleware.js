@@ -7,6 +7,7 @@ dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+
 /**
  * Middleware para proteger rutas.
  * Verifica el token JWT enviado en el header de autorización.
@@ -19,7 +20,8 @@ export const protect = async (req, res, next) => {
     
     // El token típicamente viene como: "Bearer TOKEN_AQUI"
     const authHeader = req.headers.authorization;
-
+    console.log("🔐 authHeader:", authHeader);
+    console.log("🔐 JWT_SECRET:", JWT_SECRET);
     if (authHeader && authHeader.startsWith('Bearer')) {
         // Extraemos solo el token (quitando "Bearer ")
         token = authHeader.split(' ')[1];
