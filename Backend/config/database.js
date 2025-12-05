@@ -1,33 +1,76 @@
-// config/database.js
-
 import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv'; // Si aún lo tienes aquí, lo eliminaremos en el paso 2
 
-// 1. CONFIGURACIÓN E INSTANCIACIÓN
-const DB_FILE = process.env.DB_FILE || './data/dev_database.sqlite';
-const SYNC_ENABLED = true;
+// La carga de dotenv se realiza en el archivo api/index.js (punto de entrada)
+
+// ===================================
+// 1. Detección de Entorno y Configuración
+// ===================================
+
+const isProduction = process.env.NODE_ENV === 'production' || process.env.DB_HOST;
+
+let sequelize;
+
+if (isProduction) {
+    // === MODO PRODUCCIÓN (PostgreSQL/Supabase) ===
+    console.log("🛠️ Usando configuración de PostgreSQL.");
+    
+    // NOTA: Para Supabase, es común que se necesite SSL/TLS.
+    // Usamos el constructor con credenciales separadas para mayor claridad.
+    sequelize = new Sequelize(
+        process.env.DB_NAME, 
+        process.env.DB_USER, 
+        process.env.DB_PASSWORD, 
+        {
+            host: process.env.DB_HOST,
+            port: process.env.DB_PORT,
+            dialect: 'postgres',
+            logging: false,
+            dialectOptions: {
+                ssl: {
+                    require: true, 
+                    rejectUnauthorized: false // Acepta certificados autofirmados como los de Supabase
+                },
+            },
+            // 🔑 CLAVE VERCEL: Configura el pool de conexiones para Serverless
+            pool: {
+                max: 5,     // Máximo de conexiones abiertas
+                min: 0,
+                acquire: 30000,
+                idle: 10000, // Desconecta después de 10 segundos de inactividad
+            }
+        }
+    );
+
+} else {
+    // === MODO DESARROLLO (SQLite Local) ===
+    const DB_FILE = process.env.DB_FILE || './data/dev_database.sqlite';
+    console.log(`🛠️ Usando configuración de SQLite local: ${DB_FILE}`);
+
+    sequelize = new Sequelize({
+        dialect: 'sqlite',
+        storage: DB_FILE,
+        logging: false,
+    });
+}
 
 
-const sequelize = new Sequelize({
-    dialect: 'sqlite',
-    storage: DB_FILE,
-    logging: false, // Deshabilitar logs de SQL por defecto
-});
+// ===================================
+// 2. FUNCIÓN DE CONEXIÓN
+// ===================================
 
-
-// 2. FUNCIÓN DE CONEXIÓN (Exportación Nombrada)
-// Exportamos connectDB con nombre para usar en server.js
+// Función exportada para usar en backend/api/index.js
 export async function connectDB() { 
+    // Comprobamos si la sincronización está habilitada por variables de entorno (solo para entornos no productivos)
+    const DB_SYNC_ENABLED = process.env.DB_SYNC_ENABLED === 'true'; 
+
     try {
         await sequelize.authenticate();
-        console.log('El valor de DB_SYNC_ENABLED es', process.env.DB_SYNC_ENABLED === 'true');        
-        console.log(`✅ Conexión a SQLite (${DB_FILE}) establecida correctamente.`);
-        console.log('Syncronización de la base de datos está', SYNC_ENABLED ? 'HABILITADA' : 'DESHABILITADA');
-        // LÓGICA DE SINCRONIZACIÓN CONDICIONAL
-        if (SYNC_ENABLED) {
+        console.log(`✅ Conexión a la DB (${isProduction ? 'PostgreSQL' : 'SQLite'}) establecida correctamente.`);
+        
+        // La sincronización solo debe hacerse en desarrollo/prueba, NUNCA en producción.
+        if (DB_SYNC_ENABLED) {
             await sequelize.sync({ alter: true }); 
-            console.log('✨ BASE DE DATOS ESTRUCTURADA: Las tablas han sido creadas/actualizadas en la DB.');
-            console.log('✅ Modo de sincronización habilitado y completado.');
+            console.log('✨ Sincronización de DB (alter: true) completada.');
         } else {
             console.log('✅ Modo de sincronización de DB DESHABILITADO. Se usarán las tablas existentes.');
         }
@@ -39,6 +82,7 @@ export async function connectDB() {
 }
 
 
-// 3. EXPORTACIÓN DE LA INSTANCIA DE SEQUELIZE (Exportación por Defecto)
-// 🔑 CLAVE: Exportamos la instancia sequelize para que models/index.js la use con .define
+// ===================================
+// 3. EXPORTACIÓN DE LA INSTANCIA DE SEQUELIZE
+// ===================================
 export default sequelize;

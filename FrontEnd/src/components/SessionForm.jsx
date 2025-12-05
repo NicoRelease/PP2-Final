@@ -17,7 +17,7 @@ const NewSessionForm = ({ onSesionCreada }) => {
   const [successMessage, setSuccessMessage] = useState(null); 
 
   // URL Base al puerto del backend. Usaremos '/sesiones' en el POST.
-  const API_BASE_URL = 'http://localhost:3000/api';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
   const handleChange = (e) => {
     const name = e.target.name;
