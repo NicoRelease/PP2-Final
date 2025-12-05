@@ -15,8 +15,8 @@ const GestorEstudio = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const authToken = localStorage.getItem('authToken');
-console.log('Auth Token en GestorEstudio:', authToken);
-  const API_BASE_URL = 'http://localhost:3000/api';
+  console.log('Auth Token en GestorEstudio:', authToken);
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
   // Función para cargar datos
   const fetchSesiones = async () => {
