@@ -32,16 +32,17 @@ body {
   display: flex; 
   place-items: center; /* Centra el contenido 'main' en el viewport */
   min-width: 320px;
-  max-width: 100vw;
+  /*max-width: 100vw;*/
   min-height: 100vh;
   /* Asegura que el contenido se apile en pantallas pequeñas si es necesario */
   flex-direction: column; 
 }
 
 main {
+  
   width: 100%;
-  max-width: 1200px; /* Establece un ancho máximo para escritorio */
-  padding: 2em;
+  /*max-width: 1200px; /* Establece un ancho máximo para escritorio */
+  padding: 20px;
   box-sizing: border-box;
   
   /* --- Propiedades clave de Flexbox para la responsividad --- */

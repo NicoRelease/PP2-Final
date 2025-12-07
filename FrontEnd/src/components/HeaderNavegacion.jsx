@@ -13,9 +13,9 @@ const HeaderNavegacion = ({ vistaActual, onCambiarVista }) => {
       <button
         onClick={() => onCambiarVista('sesiones')}
         style={{
-          backgroundColor: vistaActual === 'sesiones' ? '#007bff' : '#f8f9fa',
+          backgroundColor: vistaActual === 'sesiones' ? '#4c545eff' : '#f8f9fa',
           color: vistaActual === 'sesiones' ? 'white' : '#333',
-          border: '1px solid #007bff',
+          border: '1px solid #4c545eff',
           padding: '12px 24px',
           cursor: 'pointer',
           borderRadius: '5px 0 0 5px',
@@ -30,9 +30,9 @@ const HeaderNavegacion = ({ vistaActual, onCambiarVista }) => {
       <button
         onClick={() => onCambiarVista('fechas')}
         style={{
-          backgroundColor: vistaActual === 'fechas' ? '#007bff' : '#f8f9fa',
+          backgroundColor: vistaActual === 'fechas' ? '#4c545eff' : '#f8f9fa',
           color: vistaActual === 'fechas' ? 'white' : '#333',
-          border: '1px solid #007bff',
+          border: '1px solid #4c545eff',
           padding: '12px 24px',
           cursor: 'pointer',
           borderRadius: '0 5px 5px 0',
