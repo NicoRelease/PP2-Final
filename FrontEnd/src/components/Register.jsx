@@ -137,7 +137,7 @@ console.log ('Datos recibidos:', data);
                         {/* Botón de Registro */}
                         <button
                             type="submit"
-                            className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                            className="w-full py-3 bg-blue-600 text-black font-semibold rounded-xl hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
                             disabled={loading}
                         >
                             {loading ? 'Registrando...' : 'Registrar Cuenta'}

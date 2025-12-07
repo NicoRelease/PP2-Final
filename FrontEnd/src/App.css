@@ -1,9 +1,22 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
+  /* Eliminar 'max-width' y 'margin' aquí para manejar el ancho en la Media Query */
+  margin: 0;
   padding: 2rem;
-  text-align: center;
+  
+  /* --- Propiedades clave de Flexbox para la organización --- */
+  display: flex;
+  /* El contenido se distribuye horizontalmente (por defecto) */
+  flex-direction: column; 
+  /* Centra el contenido horizontalmente (si es 'column') */
+  align-items: center; 
+  /* Distribuye el espacio entre los ítems verticalmente */
+  justify-content: flex-start; 
+  /* Asegura que ocupe todo el espacio disponible */
+  width: 100%; 
+  min-height: 100vh; /* Ocupa al menos la altura completa de la vista */
 }
+
+/* --- LOGOS Y ANIMACIONES (Sin cambios necesarios) --- */
 
 .logo {
   height: 6em;
@@ -33,10 +46,33 @@
   }
 }
 
+/* --- CONTENEDORES INTERNOS (Ahora serán flexibles) --- */
+
 .card {
   padding: 2em;
+  /* Hace que el componente se adapte al ancho disponible */
+  width: 100%; 
+  /* Si hay múltiples tarjetas, utiliza Flexbox */
+  display: flex; 
+  flex-direction: column;
+  align-items: center;
 }
 
 .read-the-docs {
   color: #888;
+}
+
+/* --- MEDIA QUERY: Restringir el ancho en Escritorio --- */
+
+@media (min-width: 768px) {
+  #root {
+    /* Reactivar el ancho máximo y centrado SÓLO en pantallas grandes */
+    max-width: 1280px;
+    margin: 0 auto;
+    min-height: auto; /* Ya no necesitamos forzar 100vh si el contenido no lo requiere */
+  }
+  .card {
+    /* Limitar el ancho de la tarjeta en escritorio si es necesario */
+    max-width: 600px; 
+  }
 }

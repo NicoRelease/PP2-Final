@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import HeaderNoLink from './HeaderNoLink';
+
 // NOTA IMPORTANTE: La librería 'crypto-js' no se puede importar directamente en este entorno.
 // Usaremos la referencia global si existe, o un método de codificación simple (Base64)
 // si no existe, para asegurar que el componente compile. 
@@ -23,7 +25,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(""); // Estado para mensajes de error
 
-  const secretKey = 'clave-secreta-256bits';
+  const secretKey = 'clave-secreta-255bits';
   
 
 
@@ -114,16 +116,14 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <Header /> 
+      <HeaderNoLink /> 
       
       <div className="flex flex-col items-center justify-center pt-8 px-4">
         <form 
           onSubmit={handleSubmit} 
           className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100"
         >
-          <h2 className="text-3xl font-extrabold text-gray-900 mb-8 text-center">
-            👋 Iniciar Sesión
-          </h2>
+          
 
           {/* Mensaje de Error */}
           {errorMessage && (
@@ -139,12 +139,12 @@ export default function Login() {
           {/* Campo de Usuario */}
           <div className="mb-5">
             <label className="block text-gray-700 font-medium mb-2" htmlFor="loginUser">
-              Usuario o Correo:
+              Correo: 
             </label>
             <input
               id="loginUser"
-              type="text"
-              className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150 shadow-sm"
+              type="email"
+              className="w-[calc(100%-5px)] p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150 shadow-sm"
               value={loginUser}
               onChange={(e) => setLoginUser(e.target.value)}
               placeholder="ej: tu.correo@dominio.com"
@@ -173,7 +173,7 @@ export default function Login() {
           {/* Botón de Submit */}
           <button
             type="submit"
-            className={`w-full py-3 px-4 rounded-xl text-white font-bold transition duration-300 ${
+            className={`w-full py-3 px-4 rounded-xl text-black font-bold transition duration-300 ${
               isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-lg'
             }`}
             disabled={isLoading}

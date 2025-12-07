@@ -1,4 +1,4 @@
-import db from '../models/Index.js'; // Acceso al modelo User
+import db from '../models/index.js'; // Acceso al modelo User
 import jwt from 'jsonwebtoken';
 
 const User = db.User;

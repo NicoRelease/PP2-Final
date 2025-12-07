@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate,Link } from 'react-router-dom';
-
+import Header from './Header';
 
 const NewSessionForm = ({ onSesionCreada }) => {
   const navigate = useNavigate();
