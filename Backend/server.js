@@ -1,7 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import {connectDB} from './config/database.js';
+import { sequelize } from './config/database.js';
+
 
 // 🔑 CLAVE: Importar los modelos y asociaciones ANTES de startServer()
 import db from './models/index.js'; // Asegúrate de que esta ruta es correcta
@@ -63,7 +64,21 @@ app.use('/api', sesionesRouter);
 
 async function startServer() {
     // 1. Conectar a PostgreSQL
-    await connectDB();
+    await sequelize();
+
+try {
+  await sequelize.authenticate();
+  console.log("Connectado a Supabase");
+
+  // Primera vez:
+   await sequelize.sync({ alter: true });
+
+  // Después:
+  await sequelize.sync();
+  console.log("Modelos sincronizados");
+} catch (err) {
+  console.error("error Base de Datos:", err);
+}
 
     // 2. Iniciar Express Server
     app.listen(PORT, () => {
