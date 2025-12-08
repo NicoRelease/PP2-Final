@@ -10,9 +10,9 @@ const Title = "Optimizador de Estudio";
 
 // ➡️ ENLACES DE NAVEGACIÓN PRINCIPAL (Para usuarios logueados)
 const mainNavLinks = [
-  { path: '/Crear-sesion', label: 'Inicio' },
+  { path: '/Crear-sesion', label: 'Crear Sesión' },
   { path: '/gestor-estudio', label: 'Listado de sesiones' },
-  { path: '//tareas/:tareaId', label: 'Tarea Manager' },
+  //{ path: '//tareas/:tareaId', label: 'Tarea Manager' },
 ];
 
 // ➡️ ENLACES DE AUTENTICACIÓN (Para usuarios NO logueados)

@@ -3,7 +3,8 @@ import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import Conversion from './Conversion';
 import Header from './Header';
-
+import '../App.css';
+import HeaderNoLink from './HeaderNoLink';
 
 const TareaManager = () => {
   const { tareaId } = useParams();
@@ -208,7 +209,8 @@ const TareaManager = () => {
 
   return (
     <>
-         <Header />
+         <div className="Tarjeta-Principal">
+                  <HeaderNoLink />
 
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <div style={{
@@ -278,6 +280,7 @@ const TareaManager = () => {
           <button onClick={eliminarTarea}>🗑️ Eliminar Tarea</button>
         )}
       </div>
+    </div>
     </div>
     </>
   );
