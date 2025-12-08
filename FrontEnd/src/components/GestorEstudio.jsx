@@ -6,6 +6,8 @@ import HeaderNavegacion from './HeaderNavegacion';
 import SesionesList from './SesionesList';
 import TareasPorFecha from './TareasPorFecha';
 import Header from './Header';
+import '../App.css';
+import HeaderNoLink from './HeaderNoLink';
 
 
 const GestorEstudio = () => {
@@ -15,8 +17,8 @@ const GestorEstudio = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const authToken = localStorage.getItem('authToken');
-  console.log('Auth Token en GestorEstudio:', authToken);
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+console.log('Auth Token en GestorEstudio:', authToken);
+  const API_BASE_URL = 'http://localhost:3000/api';
 
   // Función para cargar datos
   const fetchSesiones = async () => {
@@ -157,10 +159,10 @@ if (!authToken) {
 
   return (
     <>
+    <div className="Tarjeta-Principal">
+         <HeaderNoLink />
     
-         <Header />
-    
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+
       {/* Header de navegación */}
       <HeaderNavegacion 
         vistaActual={vistaActual}

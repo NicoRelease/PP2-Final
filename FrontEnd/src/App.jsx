@@ -8,15 +8,14 @@ import TareaManager from './components/TareaManager';
 import SessionDetail from './components/SessionDetail';
 import Login from './components/Login';
 import Register from './components/Register';
+import './App.css';
+import '../src/App.css';
 
 function App() {
   return (
     <Router>
-      <div className="app-container" style={{ fontFamily: 'Arial, sans-serif' }}>
-        
-       
-
-        <main style={{ padding: '20px' }}>
+      <div className="app-container" >
+        <main>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/Login" element={<Login />} />

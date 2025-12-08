@@ -7,7 +7,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken'; 
 
 // Clave secreta para desencriptar el transporte (DEBE COINCIDIR con la del frontend)
-const CLIENT_SECRET_KEY = 'clave-secreta-256bits'; 
+const CLIENT_SECRET_KEY = process.env.CLIENT_SECRET_KEY || 'clave_secreta_por_defecto'; 
 
 const JWT_SECRET = process.env.JWT_SECRET;
 console.log('Valor de JWT_SECRET en authcontroller.js:', JWT_SECRET);

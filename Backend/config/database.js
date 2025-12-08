@@ -1,80 +1,56 @@
+// config/database.js
+
 import { Sequelize } from 'sequelize';
+import dotenv from 'dotenv'; // Si aún lo tienes aquí, lo eliminaremos en el paso 2
 
-// La carga de dotenv se realiza en el archivo api/index.js (punto de entrada)
+// 1. CONFIGURACIÓN E INSTANCIACIÓN
 
-// ===================================
-// 1. Detección de Entorno y Configuración
-// ===================================
-
-const isProduction = process.env.NODE_ENV === 'production' || process.env.DB_HOST;
-
-let sequelize;
-
-if (isProduction) {
-    // === MODO PRODUCCIÓN (PostgreSQL/Supabase) ===
-    console.log("🛠️ Usando configuración de PostgreSQL.");
-    
-    // NOTA: Para Supabase, es común que se necesite SSL/TLS.
-    // Usamos el constructor con credenciales separadas para mayor claridad.
-    sequelize = new Sequelize(
-        process.env.DB_NAME, 
-        process.env.DB_USER, 
-        process.env.DB_PASSWORD, 
-        {
-            host: process.env.DB_HOST,
-            port: process.env.DB_PORT,
-            dialect: 'postgres',
-            logging: false,
-            dialectOptions: {
-                ssl: {
-                    require: true, 
-                    rejectUnauthorized: false // Acepta certificados autofirmados como los de Supabase
-                },
-            },
-            // 🔑 CLAVE VERCEL: Configura el pool de conexiones para Serverless
-            pool: {
-                max: 5,     // Máximo de conexiones abiertas
-                min: 0,
-                acquire: 30000,
-                idle: 10000, // Desconecta después de 10 segundos de inactividad
-            }
-        }
-    );
-
-} else {
-    // === MODO DESARROLLO (SQLite Local) ===
-    const DB_FILE = process.env.DB_FILE || './data/dev_database.sqlite';
-    console.log(`🛠️ Usando configuración de SQLite local: ${DB_FILE}`);
-
-    sequelize = new Sequelize({
-        dialect: 'sqlite',
-        storage: DB_FILE,
-        logging: false,
-    });
-}
+const DB_FILE = process.env.DB_FILE || './data/dev_database.sqlite';
+const SYNC_ENABLED = true;
 
 
-// ===================================
-// 2. FUNCIÓN DE CONEXIÓN
-// ===================================
+const sequelize = new Sequelize({
+    dialect: 'sqlite',
+    storage: DB_FILE,
+    logging: false, // Deshabilitar logs de SQL por defecto
+});
 
-// Función exportada para usar en backend/api/index.js
+
+// 2. FUNCIÓN DE CONEXIÓN (Exportación Nombrada)
+// Exportamos connectDB con nombre para usar en server.js
 export async function connectDB() { 
-    // Comprobamos si la sincronización está habilitada por variables de entorno (solo para entornos no productivos)
-    const DB_SYNC_ENABLED = process.env.DB_SYNC_ENABLED === 'true'; 
-
     try {
         await sequelize.authenticate();
-        console.log(`✅ Conexión a la DB (${isProduction ? 'PostgreSQL' : 'SQLite'}) establecida correctamente.`);
-        
-        // La sincronización solo debe hacerse en desarrollo/prueba, NUNCA en producción.
-        if (DB_SYNC_ENABLED) {
+        console.log('El valor de DB_SYNC_ENABLED es', process.env.DB_SYNC_ENABLED === 'true');        
+        console.log(`✅ Conexión a SQLite (${DB_FILE}) establecida correctamente.`);
+        console.log('Syncronización de la base de datos está', SYNC_ENABLED ? 'HABILITADA' : 'DESHABILITADA');
+        // LÓGICA DE SINCRONIZACIÓN CONDICIONAL
+  if (SYNC_ENABLED) {
+            console.log('Ingresando al If de SYNC_ENABLED...');
             await sequelize.sync({ alter: true }); 
-            console.log('✨ Sincronización de DB (alter: true) completada.');
+            console.log('✨ BASE DE DATOS ESTRUCTURADA: Las tablas han sido creadas/actualizadas en la DB.');
+            console.log('✅ Modo de sincronización habilitado y completado.');
         } else {
             console.log('✅ Modo de sincronización de DB DESHABILITADO. Se usarán las tablas existentes.');
-        }
+            
+            // ⬅️ **CORRECCIÓN:** Usar Sequelize para vaciar las tablas
+            
+            // ⚠️ NOTA: Debes asegurarte de que los modelos (User, Tarea, Sesion) 
+            // han sido definidos e importados ANTES de este punto.
 
+            console.log('🗑️ Vaciando datos de tablas existentes (User, Tarea, Sesion)...');
+            
+            // Opción 1: Usar .truncate() en los modelos (¡Recomendado!)
+            // Esto es más limpio y usa TRUNCATE TABLE si la DB lo soporta, o DELETE FROM si no.
+            if (User && Tarea && Sesion) { // Verificación de existencia de modelos
+                await users.destroy({ truncate: true, cascade: true }); 
+                await tareas.destroy({ truncate: true, cascade: true });
+                await sesiones.destroy({ truncate: true, cascade: true });
+                console.log('✅ Datos de tablas vaciados correctamente.');
+            } else {
+                console.warn('⚠️ No se pudieron vaciar las tablas: Los modelos (User, Tarea, Sesion) no están disponibles.');
+            }         
+        }
     } catch (error) {
         console.error('❌ ERROR CRÍTICO DE CONEXIÓN A LA BASE DE DATOS:', error.message);
         throw new Error('Fallo al conectar o sincronizar la base de datos.'); 
@@ -82,7 +58,6 @@ export async function connectDB() {
 }
 
 
-// ===================================
-// 3. EXPORTACIÓN DE LA INSTANCIA DE SEQUELIZE
-// ===================================
+// 3. EXPORTACIÓN DE LA INSTANCIA DE SEQUELIZE (Exportación por Defecto)
+// 🔑 CLAVE: Exportamos la instancia sequelize para que models/index.js la use con .define
 export default sequelize;

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate,Link } from 'react-router-dom';
-
+import '../App.css';
+import HeaderNoLink from './HeaderNoLink';
+import Header from './Header';
 
 const NewSessionForm = ({ onSesionCreada }) => {
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ const NewSessionForm = ({ onSesionCreada }) => {
   const [successMessage, setSuccessMessage] = useState(null); 
 
   // URL Base al puerto del backend. Usaremos '/sesiones' en el POST.
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+  const API_BASE_URL = 'http://localhost:3000/api';
 
   const handleChange = (e) => {
     const name = e.target.name;
@@ -115,18 +117,11 @@ const NewSessionForm = ({ onSesionCreada }) => {
 
   return (
     <>
-                <header style={{ backgroundColor: '#007bff', color: 'white', padding: '15px', textAlign: 'center', marginBottom: '30px' }}>
-                    <h1>🧠 App de gestion de estudio personalizado</h1>
-                        <Link to="/" style={{ color: 'white', margin: '0 20px', textDecoration: 'none', fontWeight: 'bold' }}>
-                                     🏠 Inicio
-                                   </Link>
-                        <Link to="/gestor-estudio" style={{ color: 'white', margin: '0 20px', textDecoration: 'none', fontWeight: 'bold' }}>
-                                     📊 Gestor de Estudio
-                                   </Link>
-                  </header>
-    <div style={{ 
+<div className="Tarjeta-Principal">
+      <HeaderNoLink />
+<div style={{ 
       padding: '30px', 
-      border: '2px solid #007bff', 
+      border: '2px solid gray', 
       margin: '20px auto', 
       borderRadius: '10px', 
       maxWidth: '450px',
@@ -134,7 +129,7 @@ const NewSessionForm = ({ onSesionCreada }) => {
       boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
     }}>
       <h3 style={{ textAlign: 'center', color: '#007bff', marginBottom: '25px' }}>
-        📝 Crear Nueva Sesión de Estudio
+        Crear Nueva Sesión de Estudio
       </h3>
       
       {successMessage && (
@@ -168,7 +163,7 @@ const NewSessionForm = ({ onSesionCreada }) => {
         
         <div style={{ marginBottom: '20px' }}>
           <label htmlFor="nombre" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-            📚 Nombre de la Sesión:
+            Nombre de la Sesión:
           </label>
           <input 
             type="text" 
@@ -190,7 +185,7 @@ const NewSessionForm = ({ onSesionCreada }) => {
 
         <div style={{ marginBottom: '20px' }}>
           <label htmlFor="fecha_examen" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-            🗓️ Fecha de Examen:
+            Fecha de Examen:
           </label>
           <input 
             type="date" 
@@ -215,7 +210,7 @@ const NewSessionForm = ({ onSesionCreada }) => {
         
         <div style={{ marginBottom: '25px' }}>
           <label htmlFor="duracion_diaria_estimada" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-            ⏱️ Minutos a Estudiar por Día:
+            Minutos a Estudiar por Día:
           </label>
           <input 
             type="number" 
@@ -245,7 +240,7 @@ const NewSessionForm = ({ onSesionCreada }) => {
           style={{ 
                 width: '100%',
                 padding: '15px',
-                backgroundColor: loading ? '#6c757d' : '#007bff',
+                backgroundColor: loading ? '#6c757d' : 'gray',
                 color: 'white',
                 border: 'none',
                 borderRadius: '5px',
@@ -253,7 +248,7 @@ const NewSessionForm = ({ onSesionCreada }) => {
                 fontSize: '16px',
                 fontWeight: 'bold'
              }}>
-            🚀 {loading ? '⏳ Planificando...' : 'Crear Sesión'} 
+            {loading ? '⏳ Planificando...' : 'Crear Sesión'} 
         </button>
 
         <div style={{ 
@@ -271,6 +266,10 @@ const NewSessionForm = ({ onSesionCreada }) => {
         </div>
       </form>
     </div>
+
+</div>
+                
+    
     </>
   );
 };

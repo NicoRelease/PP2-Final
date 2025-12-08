@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import HeaderNoLink from './HeaderNoLink';
+import '../App.css';
 
 
 export default function Register() {
@@ -66,24 +68,29 @@ console.log ('Datos recibidos:', data);
     };
     return (
         <>
-            <header className="bg-blue-600 text-white p-4 text-center mb-6 shadow-md">
-                <h1 className="text-xl md:text-2xl font-semibold">🧠 App de gestion de estudio personalizado</h1>
-            </header>
+        <div className="Tarjeta-Principal">
+            <HeaderNoLink />
             
-            <div className="flex flex-col items-center justify-center p-4">
-                <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-sm">
-                    <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">Registra tu cuenta</h2>
+            
+                <div className="Form-Container">
+                        <form 
+                          onSubmit={handleRegister} 
+                          className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100"
+                        >
+                          
+                
+                          {/* Mensaje de Error */}
+                          {error && (
+                            <div 
+                              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm" 
+                              role="alert"
+                            >
+                              <p className="font-semibold">Error:</p>
+                              <p>{error}</p>
+                            </div>
+                          )}
 
-                    {/* Mensaje de Error */}
-                    {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                            {error}
-                        </div>
-                    )}
-
-                    <form onSubmit={handleRegister}>
-                        
-                        {/* Campo Nombre Completo / Username */}
+                {/* Campo Nombre Completo / Username */}
                         <div className="mb-4">
                             <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2 text-left">
                                 Nombre completo (Username)
@@ -99,57 +106,58 @@ console.log ('Datos recibidos:', data);
                                 required
                             />
                         </div>
-
-                        {/* Campo Correo Electrónico */}
-                        <div className="mb-4">
-                            <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2 text-left">
-                                Correo electrónico
-                            </label>
-                            <input
-                                id="email"
-                                type="email"
-                                placeholder="correo@ejemplo.com"
-                                className="shadow appearance-none border rounded w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                disabled={loading}
-                                required
-                            />
-                        </div>
-
-                        {/* Campo Contraseña */}
-                        <div className="mb-6">
-                            <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2 text-left">
-                                Contraseña
-                            </label>
-                            <input
-                                id="password"
-                                type="password"
-                                placeholder="Crea una contraseña segura"
-                                className="shadow appearance-none border rounded w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                disabled={loading}
-                                required
-                            />
-                        </div>
-
-                        {/* Botón de Registro */}
-                        <button
+                
+                          {/* Campo de Usuario */}
+                          <div className="mb-5">
+                            <label className="block text-gray-700 font-medium mb-2" htmlFor="loginUser">
+                              Correo: 
+                            </label>
+                            <input
+                              id="email"
+                              type="email"
+                              className="w-[calc(100%-5px)] p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150 shadow-sm"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              placeholder="ej: tu.correo@dominio.com"
+                              disabled={loading}
+                              required
+                            />
+                          </div>
+                
+                          {/* Campo de Contraseña */}
+                          <div className="mb-8">
+                            <label className="block text-gray-700 font-medium mb-2" htmlFor="loginPassword">
+                              Contraseña:
+                            </label>
+                            <input
+                              id="password"
+                              type="password"
+                              className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150 shadow-sm"
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              placeholder="Crea una contraseña segura"
+                              disabled={loading}
+                              required
+                            />
+                          </div>
+                
+                          {/* Botón de Registro */}
+                          <button
                             type="submit"
-                            className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                            className="w-full py-3 bg-blue-600 text-black font-semibold rounded-xl hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
                             disabled={loading}
                         >
                             {loading ? 'Registrando...' : 'Registrar Cuenta'}
                         </button>
-                    </form>
-
-                    {/* Link a Login */}
-                    <div className="mt-4 text-center">
-                        <Link to="/Login" className="text-sm text-blue-600 hover:underline">
-                            ¿Ya tenés cuenta? Inicia sesión
-                        </Link>
-                    </div>
+                
+                          {/* Enlace de Registro */}
+                          <div className="mt-6 text-center">
+                            <Link to="/Login" className="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline transition duration-150">
+                              ¿Ya tenés cuenta? Logueate aquí.
+                            </Link>
+                          </div>
+                          
+                        </form>
                 </div>
             </div>
         </>
