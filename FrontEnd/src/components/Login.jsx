@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import '../App.css';
 import HeaderNoLink from './HeaderNoLink';
+import HeaderInicio from './HeaderInicio';
 
 // NOTA IMPORTANTE: La librería 'crypto-js' no se puede importar directamente en este entorno.
 // Usaremos la referencia global si existe, o un método de codificación simple (Base64)
@@ -115,10 +117,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      <HeaderNoLink /> 
+    <div className="Tarjeta-Principal">
+      <HeaderNoLink />     
+         
       
-      <div className="flex flex-col items-center justify-center pt-8 px-4">
+      <div className="Form-Container">
         <form 
           onSubmit={handleSubmit} 
           className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100"

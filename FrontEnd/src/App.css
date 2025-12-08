@@ -89,3 +89,30 @@
   /* Asegura que el contenido se apile en pantallas pequeñas si es necesario */
   flex-direction: column; 
 }
+.Tarjeta-Principal {
+    width: 100%;
+  min-height: 100vh;
+  background-color: #f3f4f6; /* bg-gray-100 */
+  padding-top: 2.5rem; /* py-10 */
+  padding-bottom: 2.5rem; /* py-10 */
+  padding-left: 1rem; /* px-4 */
+  padding-right: 1rem; /* px-4 */
+}
+.Form-Container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 2.5rem; /* py-10 */
+  padding-bottom: 2.5rem; /* py-10 */
+  padding-left: 1rem; /* px-4 */
+  padding-right: 1rem; /* px-4 */
+}
+
+@media (min-width: 640px) {
+  .Tarjeta-Principal {
+    padding-left: 1.5rem; /* sm:px-6 */
+    padding-right: 1.5rem; /* sm:px-6 */
+  }
+}

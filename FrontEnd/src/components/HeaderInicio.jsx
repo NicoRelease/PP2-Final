@@ -27,7 +27,7 @@ const HeaderInicio = () => {
     fontWeight: 'bold',
     backgroundColor: '#0056b3', // Un azul más oscuro para resaltar
   };
-    
+    const Title = "Optimizador de Estudio";
 
   return (
     <header style={{ 
@@ -44,7 +44,7 @@ const HeaderInicio = () => {
       {/* Contenedor del Título y Navegación */}
       <div style={{ flexGrow: 1, textAlign: 'left' }}> 
         <h1 style={{ marginBottom: '15px', fontSize: '2em', paddingLeft: '15px' }}>
-          Optimizador de Estudio
+          {Title}
         </h1>
         <nav>
           <div style={{ flexGrow: 1, textAlign: 'centered' }}>

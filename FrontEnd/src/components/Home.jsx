@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import '../components/Home.css';
+import '../App.css';
 import HeaderInicio from './HeaderInicio';
 import HeaderNoLink from './HeaderNoLink';
 
@@ -8,7 +8,7 @@ export default function Home() {
 
   return (
     // Contenedor principal: Ocupa toda la altura y tiene el fondo.
-    <div className= "Tarjeta-Home">
+    <div className= "Tarjeta-Principal">
        {/* Título - SIN DIV ADICIONAL */}
        <HeaderInicio />
         
