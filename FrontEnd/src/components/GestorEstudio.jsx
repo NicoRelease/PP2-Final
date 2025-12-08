@@ -6,6 +6,8 @@ import HeaderNavegacion from './HeaderNavegacion';
 import SesionesList from './SesionesList';
 import TareasPorFecha from './TareasPorFecha';
 import Header from './Header';
+import '../App.css';
+import HeaderNoLink from './HeaderNoLink';
 
 
 const GestorEstudio = () => {
@@ -157,10 +159,10 @@ if (!authToken) {
 
   return (
     <>
+    <div className="Tarjeta-Principal">
+         <HeaderNoLink />
     
-         <Header />
-    
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+
       {/* Header de navegación */}
       <HeaderNavegacion 
         vistaActual={vistaActual}

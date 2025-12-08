@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import '../App.css';
 
 /**
  * 💡 Configuración de los enlaces (Variables)
@@ -9,14 +10,14 @@ const Title = "Optimizador de Estudio";
 
 // ➡️ ENLACES DE NAVEGACIÓN PRINCIPAL (Para usuarios logueados)
 const mainNavLinks = [
-  { path: '/dashboard', label: '📊 Dashboard' },
-  { path: '/agenda', label: '🗓️ Agenda' },
-  { path: '/settings', label: '⚙️ Configuración' },
+  { path: '/Crear-sesion', label: 'Inicio' },
+  { path: '/gestor-estudio', label: 'Listado de sesiones' },
+  { path: '//tareas/:tareaId', label: 'Tarea Manager' },
 ];
 
 // ➡️ ENLACES DE AUTENTICACIÓN (Para usuarios NO logueados)
 const authNavLinks = [
-    { path: '/', label: '🏠 Inicio' }, // La ruta raíz suele ser el login
+    { path: '/', label: 'Inicio' }, // La ruta raíz suele ser el login
      
 ];
 
@@ -59,26 +60,37 @@ const HeaderNoLink = () => {
 
 
   return (
-    <header style={{ 
-      backgroundColor: '#4c545eff', 
-      color: 'white', 
-      padding: '15px', 
-      textAlign: 'center', 
-      marginBottom: '30px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center'
-    }}>
+    <header className="header">
       {/* Contenedor del Título y Navegación */}
-      <div style={{ flexGrow: 1, textAlign: 'left' }}> 
-        <h1 style={{ marginBottom: '15px', fontSize: '2em', paddingLeft: '15px' }}>
+      <div className="Links"> 
+        <div className="Contenedor-Title">
+          <h1>
           {Title}
         </h1>
+        <div className='Contenedor-boton'>
+          {/* Botón de Logout a la derecha */}
+      <div className="ButtonLogout">
+        {/* 💡 Condicional: Muestra el botón solo si NO estamos en Login o Register */}
+        {shouldShowLogoutButton && (
+          <button className ="ButtonLogout"
+            onClick={handleLogout}
+            
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c82333'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
+          >
+            Cerrar Sesión
+          </button>
+        )}
+      </div>
+              </div>
+        
+        
+        </div>
         <nav>
           <div style={{ flexGrow: 1, textAlign: 'left' }}>
             
             {/* 💡 RENDERIZADO CONDICIONAL DE ENLACES */}
+            <div className='Links-Nav'>
             {linksToRender
               // Filtra: Oculta el enlace si el path coincide con la ruta actual
               .filter(link => link.path !== currentPath) 
@@ -88,34 +100,13 @@ const HeaderNoLink = () => {
                 </Link>
               ))
             }
+            </div>
+            
           </div>
         </nav>
       </div>
 
-      {/* Botón de Logout a la derecha */}
-      <div>
-        {/* 💡 Condicional: Muestra el botón solo si NO estamos en Login o Register */}
-        {shouldShowLogoutButton && (
-          <button
-            onClick={handleLogout}
-            style={{
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              padding: '10px 20px',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              transition: 'background-color 0.3s',
-              marginRight: '15px',
-            }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c82333'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
-          >
-            Cerrar Sesión 🚪
-          </button>
-        )}
-      </div>
+      
     </header>
   );
 };
