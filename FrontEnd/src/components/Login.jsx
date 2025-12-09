@@ -95,7 +95,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-3 px-4 rounded-xl text-white font-bold transition duration-300 ${
+            className={`w-full py-3 px-4 rounded-xl text-black font-bold transition duration-300 ${
               isLoading 
                 ? 'bg-blue-400 cursor-not-allowed' 
                 : 'bg-blue-600 hover:bg-blue-700 shadow-lg'

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase'; // ← mismo archivo que usamos en Login
 import HeaderNoLink from './HeaderNoLink';
+import '../App.css';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -118,7 +119,7 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-xl text-white font-bold transition duration-300 ${
+            className= {`w-full py-3 rounded-xl text-black font-bold transition duration-300 ${
               loading 
                 ? 'bg-blue-400 cursor-not-allowed' 
                 : 'bg-blue-600 hover:bg-blue-700 shadow-lg'
