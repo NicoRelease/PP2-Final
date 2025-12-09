@@ -2,7 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-import PrivateRoute from './components/PrivateRoute';   // ← este es el que creamos antes
+import PrivateRoute from './components/PrivateRoute'; 
 
 import Home from './components/Home';
 import SessionForm from './components/SessionForm';
