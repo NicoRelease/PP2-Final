@@ -1,14 +1,12 @@
 // components/GestorEstudio.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import HeaderNavegacion from './HeaderNavegacion';
 import SesionesList from './SesionesList';
 import TareasPorFecha from './TareasPorFecha';
-import Header from './Header';
-import '../App.css';
 import HeaderNoLink from './HeaderNoLink';
-
+import '../App.css';
 
 const GestorEstudio = () => {
   const [vistaActual, setVistaActual] = useState('sesiones'); // 'sesiones' o 'fechas'
@@ -16,37 +14,73 @@ const GestorEstudio = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  
+  // Obtener token y userId desde localStorage
   const authToken = localStorage.getItem('authToken');
-console.log('Auth Token en GestorEstudio:', authToken);
-  const API_BASE_URL = 'http://localhost:3000/api';
+  const userId = localStorage.getItem('UserId');
+  
+  console.log('🔑 Auth Token en GestorEstudio:', authToken);
+  console.log('👤 UserId en GestorEstudio:', userId);
+  
+  // IMPORTANTE: Verifica si VITE_API_URL ya incluye '/api' o no
+  // Si tu server.js usa app.use('/sesiones', ...) entonces NO agregues '/api'
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  
+  // Configuración de headers con token
+  const getConfig = () => ({
+    headers: {
+      'Authorization': `Bearer ${authToken}`
+    }
+  });
 
   // Función para cargar datos
   const fetchSesiones = async () => {
     setLoading(true);
     setError(null);
 
-if (!authToken) {
-        console.error('❌ Token de autenticación no encontrado. Redirigiendo a login.');
-        navigate('/Login'); 
-        setError('No autorizado. Por favor, inicia sesión.');
-        setLoading(false);
-        return; 
+    // Validar autenticación
+    if (!authToken || !userId) {
+      console.error('❌ Token de autenticación o UserId no encontrado. Redirigiendo a login.');
+      navigate('/Login');
+      setError('No autorizado. Por favor, inicia sesión.');
+      setLoading(false);
+      return;
     }
-  const config = {
-        headers: {
-            'Authorization': `Bearer ${authToken}` // Formato estándar JWT
-        }
-    };
 
     try {
       console.log('🔍 Iniciando carga de sesiones...');
-      const response = await axios.get(`${API_BASE_URL}/sesiones/${localStorage.getItem('UserId')}`, config);
+      
+      // ✅ URL CORREGIDA: /sesiones/user/:UserId (según tu routes.js)
+      const url = `${API_BASE_URL}/sesiones/user/${userId}`;
+      console.log('🔗 URL de solicitud:', url);
+      
+      const response = await axios.get(url, getConfig());
       console.log('📦 Respuesta recibida:', response.data);
       setData(response.data);
+      
     } catch (err) {
-      const errorMsg = 'Error al cargar las sesiones: ' + (err.response?.data?.message || err.message);
-      console.error('❌ Error:', errorMsg, err);
+      // Debug detallado del error
+      console.error('❌ Error completo:', err);
+      console.error('🔗 URL intentada:', err.config?.url);
+      console.error('📋 Método:', err.config?.method);
+      console.error('🔑 Headers:', err.config?.headers);
+      console.error('📊 Status:', err.response?.status);
+      console.error('📝 Response data:', err.response?.data);
+      
+      const errorMsg = 'Error al cargar las sesiones: ' + 
+        (err.response?.data?.message || err.response?.data?.error || err.message);
+      
       setError(errorMsg);
+      
+      // Si es error 404, sugerir verificar la ruta
+      if (err.response?.status === 404) {
+        console.error('💡 SUGERENCIA: Verifica que la ruta /sesiones/user/:UserId exista en el backend');
+        console.error('💡 Posibles URLs:');
+        console.error(`  1. ${API_BASE_URL}/sesiones/${userId}`);
+        console.error(`  2. ${API_BASE_URL}/sesiones/user/${userId}`);
+        console.error(`  3. ${API_BASE_URL}/api/sesiones/user/${userId}`);
+      }
+      
     } finally {
       setLoading(false);
       console.log('✅ Carga de sesiones completada');
@@ -70,7 +104,7 @@ if (!authToken) {
 
   const handleSessionClick = (sesion) => {
     console.log("📍 Navegando a detalles de sesión:", sesion.id);
-    navigate(`/${sesion.id}`, { state: { sesion } });
+    navigate(`/sesiones/${sesion.id}`, { state: { sesion } });
   };
 
   const handleDeleteSession = async (sessionId) => {
@@ -81,12 +115,14 @@ if (!authToken) {
 
     console.log('🗑️ Eliminando sesión:', sessionId);
     try {
-      await axios.delete(`${API_BASE_URL}/${sessionId}`);
+      // ✅ URL CORREGIDA: /sesiones/:id
+      await axios.delete(`${API_BASE_URL}/sesiones/${sessionId}`, getConfig());
       console.log('✅ Sesión eliminada con éxito');
       alert('Sesión eliminada con éxito.');
       fetchSesiones();
     } catch (err) {
-      const errorMsg = 'Error al eliminar sesión: ' + (err.response?.data?.message || 'Error desconocido');
+      const errorMsg = 'Error al eliminar sesión: ' + 
+        (err.response?.data?.message || err.response?.data?.error || 'Error desconocido');
       console.error('❌ Error eliminando sesión:', errorMsg, err);
       alert(errorMsg);
     }
@@ -100,12 +136,14 @@ if (!authToken) {
 
     console.log('🗑️ Eliminando tarea:', tareaId, tareaNombre);
     try {
-      await axios.delete(`${API_BASE_URL}/tareas/${tareaId}`);
+      // ✅ URL CORREGIDA: /sesiones/tareas/:id
+      await axios.delete(`${API_BASE_URL}/sesiones/tareas/${tareaId}`, getConfig());
       console.log('✅ Tarea eliminada con éxito');
       alert(`Tarea "${tareaNombre}" eliminada con éxito.`);
       fetchSesiones();
     } catch (err) {
-      const errorMsg = 'Error al eliminar tarea: ' + (err.response?.data?.message || 'Error desconocido');
+      const errorMsg = 'Error al eliminar tarea: ' + 
+        (err.response?.data?.message || err.response?.data?.error || 'Error desconocido');
       console.error('❌ Error eliminando tarea:', errorMsg, err);
       alert(errorMsg);
     }
@@ -114,22 +152,27 @@ if (!authToken) {
   const handleGestionarTarea = async (tareaId, action) => {
     console.log(`🎯 Gestionando tarea ${tareaId} con acción: ${action}`);
     try {
-      const response = await axios.post(`${API_BASE_URL}/tareas/${tareaId}/gestionar`, {
-        config,
-        action: action,
-        tiempo_ejecutado: 30
-      });
+      // ✅ URL CORREGIDA: /sesiones/tareas/:id/gestionar
+      const response = await axios.post(
+        `${API_BASE_URL}/sesiones/tareas/${tareaId}/gestionar`,
+        {
+          action: action,
+          tiempo_ejecutado: 30
+        },
+        getConfig() // ✅ CORREGIDO: Pasando config como tercer parámetro
+      );
       
       console.log('✅ Tarea gestionada:', response.data);
-      //alert(`Tarea ${action} exitosamente`);
       fetchSesiones();
     } catch (err) {
-      const errorMsg = 'Error al gestionar tarea: ' + (err.response?.data?.message || 'Error desconocido');
+      const errorMsg = 'Error al gestionar tarea: ' + 
+        (err.response?.data?.message || err.response?.data?.error || 'Error desconocido');
       console.error('❌ Error gestionando tarea:', errorMsg, err);
       alert(errorMsg);
     }
   };
 
+  // Estados de carga
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
@@ -138,56 +181,83 @@ if (!authToken) {
     );
   }
   
+  // Estados de error
   if (error) {
     return (
       <div style={{ textAlign: 'center', padding: '50px', color: 'red' }}>
         <h3>Error</h3>
         <p>{error}</p>
-        <button onClick={fetchSesiones}>Reintentar</button>
+        <button 
+          onClick={fetchSesiones}
+          style={{ 
+            padding: '10px 20px', 
+            backgroundColor: '#007bff', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          Reintentar
+        </button>
       </div>
     );
   }
   
+  // Sin datos
   if (data.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
         <p>No hay sesiones planificadas.</p>
-        <button onClick={() => navigate('/crear-sesion')}>Crear primera sesión</button>
+        <button 
+          onClick={() => navigate('/crear-sesion')}
+          style={{ 
+            padding: '10px 20px', 
+            backgroundColor: '#28a745', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '5px',
+            cursor: 'pointer',
+            marginTop: '10px'
+          }}
+        >
+          Crear primera sesión
+        </button>
       </div>
     );
   }
 
+  // Vista principal
   return (
     <>
-    <div className="Tarjeta-Principal">
-         <HeaderNoLink />
-    
-
-      {/* Header de navegación */}
-      <HeaderNavegacion 
-        vistaActual={vistaActual}
-        onCambiarVista={setVistaActual}
-      />
-      
-      {/* Contenido según vista seleccionada */}
-      {vistaActual === 'sesiones' ? (
-        <SesionesList 
-          sesiones={data}
-          onSessionClick={handleSessionClick}
-          onTareaClick={handleTareaClick}
-          onDeleteSession={handleDeleteSession}
-          onDeleteTarea={handleDeleteTarea}
-          onGestionarTarea={handleGestionarTarea}
+      <div className="Tarjeta-Principal">
+        <HeaderNoLink />
+        
+        {/* Header de navegación */}
+        <HeaderNavegacion 
+          vistaActual={vistaActual}
+          onCambiarVista={setVistaActual}
         />
-      ) : (
-        <TareasPorFecha 
-          sesiones={data}
-          onTareaClick={handleTareaClick}
-          onDeleteTarea={handleDeleteTarea}
-          onGestionarTarea={handleGestionarTarea}
-        />
-      )}
-    </div>
+        
+        {/* Contenido según vista seleccionada */}
+        {vistaActual === 'sesiones' ? (
+          <SesionesList 
+            sesiones={data}
+            onSessionClick={handleSessionClick}
+            onTareaClick={handleTareaClick}
+            onDeleteSession={handleDeleteSession}
+            onDeleteTarea={handleDeleteTarea}
+            onGestionarTarea={handleGestionarTarea}
+          />
+        ) : (
+          <TareasPorFecha 
+            sesiones={data}
+            onTareaClick={handleTareaClick}
+            onDeleteTarea={handleDeleteTarea}
+            onGestionarTarea={handleGestionarTarea}
+          />
+        )}
+      </div>
     </>
   );
 };
