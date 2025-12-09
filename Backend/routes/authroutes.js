@@ -7,7 +7,7 @@ const router = Router();
 
 // Esta ruta NO lleva el middleware 'protect'
 // Maneja la petición POST /login del frontend
-router.post('/login', authController.login); 
+//router.post('/login', authController.login); 
 
 // Si tienes una ruta de registro:
 router.post('/register', authController.register);
