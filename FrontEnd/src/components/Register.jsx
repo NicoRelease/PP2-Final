@@ -46,11 +46,7 @@ console.log('Iniciando registro con:', { username, email, password });
     const encryptedPassword = encrypt(password);
 
 
-console.log('🔐 ENCRIPTACIÓN FRONTEND:');
-console.log('Email original:', email);
-console.log('Email encriptado (raw):', encryptedEmail);
-console.log('Email encriptado (typeof):', typeof encryptedEmail);
-console.log('Clave usada:', SECRET_KEY);
+
         try {
             // 2. Llamada al backend: POST /register
             const response = await fetch(`${API_BASE_URL}/register`, { 

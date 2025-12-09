@@ -20,8 +20,7 @@ export const protect = async (req, res, next) => {
     
     // El token típicamente viene como: "Bearer TOKEN_AQUI"
     const authHeader = req.headers.authorization;
-    console.log("🔐 authHeader:", authHeader);
-    console.log("🔐 JWT_SECRET:", JWT_SECRET);
+    
     if (authHeader && authHeader.startsWith('Bearer')) {
         // Extraemos solo el token (quitando "Bearer ")
         token = authHeader.split(' ')[1];
