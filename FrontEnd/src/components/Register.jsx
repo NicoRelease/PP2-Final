@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, data } from 'react-router-dom';
 import { supabase } from '../lib/supabase'; // ← mismo archivo que usamos en Login
 import HeaderNoLink from './HeaderNoLink';
 import '../App.css';
@@ -17,7 +17,7 @@ export default function Register() {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+console.log("Registering user with email:", email, "and username:", username, "and password:", password);
     // 1. Registro con Supabase Auth (email + password)
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -27,7 +27,7 @@ export default function Register() {
         data: { username }
       }
     });
-
+console.log("Supabase response data:", data);
     if (error) {
       setError(error.message);
       setLoading(false);

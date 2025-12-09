@@ -14,6 +14,8 @@ import Register from './components/Register';
 
 import './App.css';
 import '../src/App.css';
+localStorage.setItem('authToken', '');
+
 
 function App() {
   return (

@@ -1,55 +1,57 @@
 // components/GestorEstudio.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase'; // ← Tu cliente de Supabase
 import HeaderNavegacion from './HeaderNavegacion';
 import SesionesList from './SesionesList';
 import TareasPorFecha from './TareasPorFecha';
-import Header from './Header';
-import '../App.css';
 import HeaderNoLink from './HeaderNoLink';
+import '../App.css';
 
+const API_URL = 'https://wkojgwlfvegdexspucq.supabase.co/functions/v1/api';
 
 const GestorEstudio = () => {
-  const [vistaActual, setVistaActual] = useState('sesiones'); // 'sesiones' o 'fechas'
+  const [vistaActual, setVistaActual] = useState('sesiones');
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const authToken = localStorage.getItem('authToken');
-console.log('Auth Token en GestorEstudio:', authToken);
-  const API_BASE_URL = 'http://localhost:3000/api';
 
-  // Función para cargar datos
+  // Obtiene el token automáticamente (¡ADIÓS localStorage hack!)
+  const getAuthHeader = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/Login');
+      return null;
+    }
+    return { Authorization: `Bearer ${session.access_token}` };
+  };
+
+  // Cargar sesiones del usuario actual
   const fetchSesiones = async () => {
     setLoading(true);
     setError(null);
 
-if (!authToken) {
-        console.error('❌ Token de autenticación no encontrado. Redirigiendo a login.');
-        navigate('/Login'); 
-        setError('No autorizado. Por favor, inicia sesión.');
-        setLoading(false);
-        return; 
+    const headers = await getAuthHeader();
+    if (!headers) {
+      setLoading(false);
+      return;
     }
-  const config = {
-        headers: {
-            'Authorization': `Bearer ${authToken}` // Formato estándar JWT
-        }
-    };
 
     try {
-      console.log('🔍 Iniciando carga de sesiones...');
-      const response = await axios.get(`${API_BASE_URL}/sesiones/${localStorage.getItem('UserId')}`, config);
-      console.log('📦 Respuesta recibida:', response.data);
-      setData(response.data);
+      const response = await fetch(`${API_URL}/sesiones/${supabase.auth.getUser()?.data.user?.id}`, {
+        headers
+      });
+
+      if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+      const result = await response.json();
+      setData(result.data || result); // Ajusta según tu respuesta
     } catch (err) {
-      const errorMsg = 'Error al cargar las sesiones: ' + (err.response?.data?.message || err.message);
-      console.error('❌ Error:', errorMsg, err);
-      setError(errorMsg);
+      setError(err.message || 'Error al cargar sesiones');
+      if (err.message.includes('401')) navigate('/Login');
     } finally {
       setLoading(false);
-      console.log('✅ Carga de sesiones completada');
     }
   };
 
@@ -57,121 +59,101 @@ if (!authToken) {
     fetchSesiones();
   }, []);
 
-  // Funciones de manejo de eventos que se pasarán a los componentes hijos
+  // Eliminar sesión
+  const handleDeleteSession = async (sessionId) => {
+    if (!confirm('¿Eliminar esta sesión?')) return;
+
+    const headers = await getAuthHeader();
+    if (!headers) return;
+
+    try {
+      const res = await fetch(`${API_URL}/${sessionId}`, {
+        method: 'DELETE',
+        headers
+      });
+
+      if (!res.ok) throw new Error('Error al eliminar');
+
+      alert('Sesión eliminada');
+      fetchSesiones();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+
+  // Eliminar tarea
+  const handleDeleteTarea = async (tareaId, tareaNombre) => {
+    if (!confirm(`¿Eliminar tarea "${tareaNombre}"?`)) return;
+
+    const headers = await getAuthHeader();
+    if (!headers) return;
+
+    try {
+      const res = await fetch(`${API_URL}/tareas/${tareaId}`, {
+        method: 'DELETE',
+        headers
+      });
+
+      if (!res.ok) throw new Error('Error al eliminar tarea');
+
+      alert('Tarea eliminada');
+      fetchSesiones();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+
+  // Gestionar tarea (start/pause/complete)
+  const handleGestionarTarea = async (tareaId, action) => {
+    const headers = await getAuthHeader();
+    if (!headers) return;
+
+    try {
+      const res = await fetch(`${API_URL}/tareas/${tareaId}/gestionar`, {
+        method: 'POST',
+        headers: {
+          ...headers,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ accion: action })
+      });
+
+      if (!res.ok) throw new Error('Error al gestionar tarea');
+
+      fetchSesiones();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+
   const handleTareaClick = (tarea, sesionPadre) => {
-    console.log("📍 Navegando a gestionar tarea:", tarea.id, tarea.nombre);
-    navigate(`/tareas/${tarea.id}`, { 
-      state: { 
-        tarea: tarea,
-        sesion: sesionPadre
-      } 
-    });
+    navigate(`/tareas/${tarea.id}`, { state: { tarea, sesion: sesionPadre } });
   };
 
   const handleSessionClick = (sesion) => {
-    console.log("📍 Navegando a detalles de sesión:", sesion.id);
     navigate(`/${sesion.id}`, { state: { sesion } });
   };
 
-  const handleDeleteSession = async (sessionId) => {
-    if (!window.confirm("¿Confirmas que deseas eliminar esta sesión de estudio?")) {
-      console.log('❌ Eliminación de sesión cancelada');
-      return;
-    }
-
-    console.log('🗑️ Eliminando sesión:', sessionId);
-    try {
-      await axios.delete(`${API_BASE_URL}/${sessionId}`);
-      console.log('✅ Sesión eliminada con éxito');
-      alert('Sesión eliminada con éxito.');
-      fetchSesiones();
-    } catch (err) {
-      const errorMsg = 'Error al eliminar sesión: ' + (err.response?.data?.message || 'Error desconocido');
-      console.error('❌ Error eliminando sesión:', errorMsg, err);
-      alert(errorMsg);
-    }
-  };
-
-  const handleDeleteTarea = async (tareaId, tareaNombre) => {
-    if (!window.confirm(`⚠️ ¿Deseas eliminar la tarea: "${tareaNombre}"?`)) {
-      console.log('❌ Eliminación de tarea cancelada');
-      return;
-    }
-
-    console.log('🗑️ Eliminando tarea:', tareaId, tareaNombre);
-    try {
-      await axios.delete(`${API_BASE_URL}/tareas/${tareaId}`);
-      console.log('✅ Tarea eliminada con éxito');
-      alert(`Tarea "${tareaNombre}" eliminada con éxito.`);
-      fetchSesiones();
-    } catch (err) {
-      const errorMsg = 'Error al eliminar tarea: ' + (err.response?.data?.message || 'Error desconocido');
-      console.error('❌ Error eliminando tarea:', errorMsg, err);
-      alert(errorMsg);
-    }
-  };
-
-  const handleGestionarTarea = async (tareaId, action) => {
-    console.log(`🎯 Gestionando tarea ${tareaId} con acción: ${action}`);
-    try {
-      const response = await axios.post(`${API_BASE_URL}/tareas/${tareaId}/gestionar`, {
-        config,
-        action: action,
-        tiempo_ejecutado: 30
-      });
-      
-      console.log('✅ Tarea gestionada:', response.data);
-      //alert(`Tarea ${action} exitosamente`);
-      fetchSesiones();
-    } catch (err) {
-      const errorMsg = 'Error al gestionar tarea: ' + (err.response?.data?.message || 'Error desconocido');
-      console.error('❌ Error gestionando tarea:', errorMsg, err);
-      alert(errorMsg);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div style={{ textAlign: 'center', padding: '50px' }}>
-        <p>Cargando sesiones...</p>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div style={{ textAlign: 'center', padding: '50px', color: 'red' }}>
-        <h3>Error</h3>
-        <p>{error}</p>
-        <button onClick={fetchSesiones}>Reintentar</button>
-      </div>
-    );
-  }
-  
+  if (loading) return <div className="text-center py-10">Cargando sesiones...</div>;
+  if (error) return <div className="text-center py-10 text-red-600">Error: {error}</div>;
   if (data.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '50px' }}>
-        <p>No hay sesiones planificadas.</p>
-        <button onClick={() => navigate('/crear-sesion')}>Crear primera sesión</button>
+      <div className="text-center py-10">
+        <p>No hay sesiones</p>
+        <button onClick={() => navigate('/crear-sesion')} className="btn">
+          Crear primera sesión
+        </button>
       </div>
     );
   }
 
   return (
-    <>
     <div className="Tarjeta-Principal">
-         <HeaderNoLink />
-    
+      <HeaderNoLink />
+      <HeaderNavegacion vistaActual={vistaActual} onCambiarVista={setVistaActual} />
 
-      {/* Header de navegación */}
-      <HeaderNavegacion 
-        vistaActual={vistaActual}
-        onCambiarVista={setVistaActual}
-      />
-      
-      {/* Contenido según vista seleccionada */}
       {vistaActual === 'sesiones' ? (
-        <SesionesList 
+        <SesionesList
           sesiones={data}
           onSessionClick={handleSessionClick}
           onTareaClick={handleTareaClick}
@@ -180,7 +162,7 @@ if (!authToken) {
           onGestionarTarea={handleGestionarTarea}
         />
       ) : (
-        <TareasPorFecha 
+        <TareasPorFecha
           sesiones={data}
           onTareaClick={handleTareaClick}
           onDeleteTarea={handleDeleteTarea}
@@ -188,7 +170,6 @@ if (!authToken) {
         />
       )}
     </div>
-    </>
   );
 };
 

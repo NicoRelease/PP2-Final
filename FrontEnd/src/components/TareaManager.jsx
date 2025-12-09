@@ -1,87 +1,98 @@
-import React from 'react';
-import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
-import axios from 'axios';
-import Conversion from './Conversion';
-import Header from './Header';
-import '../App.css';
+// components/TareaManager.jsx
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import HeaderNoLink from './HeaderNoLink';
+import '../App.css';
+
+const API_URL = 'https://wkojgwlfvegdexspucq.supabase.co/functions/v1/api';
 
 const TareaManager = () => {
   const { tareaId } = useParams();
   const { state } = useLocation();
   const navigate = useNavigate();
-  
-  const [tarea, setTarea] = React.useState(null);
-  const [sesion, setSesion] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(null);
 
-  // ⛔ FIX: NO usar tarea.tiempo_real_ejecucion al inicializar (porque todavía no existe)
-  const [tiempoTranscurrido, setTiempoTranscurrido] = React.useState(0);
+  const [tarea, setTarea] = useState(null);
+  const [sesion, setSesion] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [tiempoTranscurrido, setTiempoTranscurrido] = useState(0);
+  const [estaActiva, setEstaActiva] = useState(false);
+  const [intervalId, setIntervalId] = useState(null);
+  const [modo, setModo] = useState('tarea-especifica');
 
-  const [estaActiva, setEstaActiva] = React.useState(false);
-  const [intervalId, setIntervalId] = React.useState(null);
-  const [modo, setModo] = React.useState('tarea-especifica');
+  // Helper para obtener token automáticamente
+  const getHeaders = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/Login');
+      return null;
+    }
+    return {
+      'Authorization': `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json'
+    };
+  };
 
-  const API_BASE_URL = 'http://localhost:3000/api';
+  // Cargar tarea específica por ID
+  const cargarTareaPorId = async (id) => {
+    const headers = await getHeaders();
+    if (!headers) return;
 
-  const cargarTareaDelDia = async () => {
-    setLoading(true);
-    setError(null);
-    
     try {
-      const response = await axios.get(`${API_BASE_URL}/tarea-del-dia/actual`);
-      console.log("Tarea del día actual-cargada:", response.data);
-      if (response.data.tieneSesiones && response.data.tarea) {
-        setTarea(response.data.tarea);
-        setSesion(response.data.sesion);
-        setModo('tarea-del-dia');
-      } else {
-        setTarea(null);
-        setSesion(null);
-        setModo('sin-sesiones');
-      }
-      
+      const res = await fetch(`${API_URL}/tareas/${id}`, { headers });
+      if (!res.ok) throw new Error('No se pudo cargar la tarea');
+      const data = await res.json();
+      setTarea(data.data || data);
+      setSesion(data.data?.sesion || data.sesion);
+      setModo('tarea-especifica');
     } catch (err) {
-      setError('Error al cargar tarea del día: ' + (err.response?.data?.message || err.message));
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  React.useEffect(() => {
-    const cargarDatos = async () => {
-      if (tareaId) {
-        setLoading(true);
-        try {
-          const response = await axios.get(`${API_BASE_URL}/tareas/${tareaId}`);
-          console.log("Tarea específica por ID cargada:", response.data);
-          setTarea(response.data);
-          setSesion(response.data.sesion);
-          setModo('tarea-especifica');
-          
-        } catch (err) {
-          setError('Error al cargar tarea específica: ' + (err.response?.data?.message || err.message));
-        } finally {
-          setLoading(false);
-        }
+  // Cargar tarea del día
+  const cargarTareaDelDia = async () => {
+    const headers = await getHeaders();
+    if (!headers) return;
+
+    try {
+      const res = await fetch(`${API_URL}/tarea-del-dia/actual`, { headers });
+      const data = await res.json();
+
+      if (data.tieneSesiones && data.tarea) {
+        setTarea(data.tarea);
+        setSesion(data.sesion);
+        setModo('tarea-del-dia');
       } else {
-        cargarTareaDelDia();
+        setModo('sin-sesiones');
       }
-    };
+    } catch (err) {
+      setError('Error al cargar tarea del día');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    cargarDatos();
-  }, [tareaId, state]);
+  useEffect(() => {
+    if (tareaId) {
+      cargarTareaPorId(tareaId);
+    } else {
+      cargarTareaDelDia();
+    }
+  }, [tareaId]);
 
-  // ⛔ FIX: Inicializar el tiempo **solo** cuando llega la tarea
-  React.useEffect(() => {
-    if (tarea && tarea.tiempo_real_ejecucion !== undefined) {
+  // Inicializar tiempo cuando llega la tarea
+  useEffect(() => {
+    if (tarea?.tiempo_real_ejecucion !== undefined) {
       setTiempoTranscurrido(tarea.tiempo_real_ejecucion || 0);
     }
   }, [tarea]);
 
-  // ⛔ FIX PRINCIPAL: El temporizador YA NO toca tarea.tiempo_real_ejecucion
-  React.useEffect(() => {
+  // Temporizador
+  useEffect(() => {
     if (estaActiva && !intervalId) {
       const id = setInterval(() => {
         setTiempoTranscurrido(prev => prev + 1);
@@ -91,198 +102,159 @@ const TareaManager = () => {
       clearInterval(intervalId);
       setIntervalId(null);
     }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
+    return () => intervalId && clearInterval(intervalId);
   }, [estaActiva, intervalId]);
 
   const formatTiempo = (segundos) => {
-    const horas = Math.floor(segundos / 3600);
-    const minutos = Math.floor((segundos % 3600) / 60);
-    const segs = segundos % 60;
-    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segs.toString().padStart(2, '0')}`;
+    const h = Math.floor(segundos / 3600).toString().padStart(2, '0');
+    const m = Math.floor((segundos % 3600) / 60).toString().padStart(2, '0');
+    const s = (segundos % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${s}`;
   };
 
   const manejarAccion = async (accion) => {
     if (!tarea) return;
 
+    const headers = await getHeaders();
+    if (!headers) return;
+
+    const tiempoEjecutado = (accion === 'stop' || accion === 'pause') ? tiempoTranscurrido : 0;
+
     try {
-      const tiempoEjecutado = 
-        (accion === 'stop' || accion === 'pause') 
-          ? tiempoTranscurrido 
-          : 0;
-      
-      const response = await axios.post(`${API_BASE_URL}/tareas/${tarea.id}/gestionar`, {
-       
-        action: accion,
-        tiempo_ejecutado: tiempoEjecutado
+      const res = await fetch(`${API_URL}/tareas/${tarea.id}/gestionar`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ accion, tiempo_ejecutado: tiempoEjecutado })
       });
+
+      if (!res.ok) throw new Error('Error al gestionar tarea');
+
+      const result = await res.json();
 
       if (accion === 'start') {
         setEstaActiva(true);
       } else if (accion === 'pause') {
         setEstaActiva(false);
-        setTarea(response.data.tarea);
+        setTarea(prev => ({ ...prev, ...result.data }));
       } else if (accion === 'stop') {
         setEstaActiva(false);
-        setTarea(response.data.tarea);
         setTiempoTranscurrido(0);
+        setTarea(prev => ({ ...prev, es_completada: true, ...result.data }));
       }
-
-      //alert(`Tarea ${accion} exitosamente`);
-
     } catch (err) {
-      alert('Error al gestionar tarea: ' + (err.response?.data?.message || err.message));
+      alert('Error: ' + err.message);
     }
   };
 
   const eliminarTarea = async () => {
-    if (!tarea) return;
+    if (!tarea || !confirm('¿Eliminar esta tarea?')) return;
 
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
-      return;
-    }
+    const headers = await getHeaders();
+    if (!headers) return;
 
     try {
-      await axios.delete(`${API_BASE_URL}/tareas/${tarea.id}`);
-      alert('Tarea eliminada exitosamente');
-      
-      if (modo === 'tarea-del-dia') {
-        cargarTareaDelDia();
-      } else {
-        navigate('/gestor-estudio');
-      }
+      const res = await fetch(`${API_URL}/tareas/${tarea.id}`, {
+        method: 'DELETE',
+        headers
+      });
+
+      if (!res.ok) throw new Error('Error al eliminar');
+
+      alert('Tarea eliminada');
+      navigate('/gestor-estudio');
     } catch (err) {
-      alert('Error al eliminar tarea: ' + (err.response?.data?.message || err.message));
+      alert('Error: ' + err.message);
     }
   };
 
-  const crearNuevaSesion = () => {
-    navigate('/');
-  };
-
-  const irAGestorEstudio = () => {
-    navigate('/gestor-estudio');
-  };
-
-  if (loading) {
-    return (
-      <div style={{ textAlign: 'center', padding: '50px' }}>
-        <p>Cargando...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={{ textAlign: 'center', padding: '50px', color: 'red' }}>
-        <h3>Error</h3>
-        <p>{error}</p>
-        <button onClick={() => navigate('/gestor-estudio')}>
-          Volver al gestor de estudio
-        </button>
-      </div>
-    );
-  }
+  if (loading) return <div className="text-center py-20">Cargando tarea...</div>;
+  if (error) return <div className="text-center py-20 text-red-600">Error: {error}</div>;
 
   if (modo === 'sin-sesiones') {
     return (
-      <div style={{ maxWidth: '600px', margin: '50px auto', textAlign: 'center', padding: '40px' }}>
-        <div style={{
-          backgroundColor: '#f8f9fa',
-          padding: '40px',
-          borderRadius: '10px',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-        }}>
-          <h1>📚 No hay sesiones activas</h1>
-          <p>No tienes sesiones de estudio planificadas.</p>
-          
-          <button onClick={crearNuevaSesion}>Crear Nueva Sesión</button>
-          <button onClick={irAGestorEstudio}>Ver Gestor de Estudio</button>
-        </div>
+      <div className="Tarjeta-Principal text-center py-20">
+        <HeaderNoLink />
+        <h1>No hay sesiones activas</h1>
+        <p>Crea una nueva sesión para comenzar</p>
+        <button onClick={() => navigate('/crear-sesion')} className="btn mx-2">
+          Crear Sesión
+        </button>
+        <button onClick={() => navigate('/gestor-estudio')} className="btn">
+          Ir al Gestor
+        </button>
       </div>
     );
   }
 
   return (
-    <>
-         <div className="Tarjeta-Principal">
-                  <HeaderNoLink />
+    <div className="Tarjeta-Principal">
+      <HeaderNoLink />
 
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-      <div style={{
-        backgroundColor: '#f8f9fa',
-        padding: '20px',
-        borderRadius: '10px',
-        marginBottom: '20px'
-      }}>
-
-        <button onClick={() => navigate('/gestor-estudio')}>
-          ↩️ Volver
+      <div className="max-w-4xl mx-auto p-6">
+        <button onClick={() => navigate('/gestor-estudio')} className="mb-6">
+          ← Volver
         </button>
 
-        <h1>🎯 Gestor de Tarea</h1>
-        
-        {tarea && (
-          <div style={{
-            backgroundColor: 'white',
-            padding: '20px',
-            borderRadius: '8px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            marginBottom: '20px'
-          }}>
-            <h2>{tarea.nombre}</h2>
-
-            
-            
-          </div>
-        )}
-
-        {/* ⏰ TEMPORIZADOR FIX: ahora muestra tiempoTranscurrido */}
-        {tarea && !tarea.es_completada && (
-          <div style={{
-            backgroundColor: 'white',
-            padding: '20px',
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <h3>⏰ Temporizador</h3>
-
-            <div style={{ fontSize: '2em', fontWeight: 'bold' }}>
-              {formatTiempo(tiempoTranscurrido)}
-            </div>
-
-            <button onClick={() => manejarAccion('start')} disabled={estaActiva}>
-              ▶️ Iniciar
-            </button>
-
-            <button onClick={() => manejarAccion('pause')} disabled={!estaActiva}>
-              ⏸️ Pausar
-            </button>
-
-            <button onClick={() => manejarAccion('stop')}>
-              ⏹️ Completar
-            </button>
-          </div>
-        )}
-
-        {sesion && (
-          <div style={{ backgroundColor: '#fff3cd', padding: '15px', borderRadius: '8px' }}>
-            <h4>📚 Sesión Padre</h4>
-            <p>{sesion.nombre}</p>
-          </div>
-        )}
+        <h1 className="text-3xl font-bold mb-6">Gestor de Tarea</h1>
 
         {tarea && (
-          <button onClick={eliminarTarea}>🗑️ Eliminar Tarea</button>
+          <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
+            <h2 className="text-2xl font-bold mb-4">{tarea.nombre}</h2>
+
+            {!tarea.es_completada && (
+              <div className="bg-gray-50 rounded-lg p-6 text-center">
+                <h3 className="text-xl mb-4">Temporizador</h3>
+                <div className="text-5xl font-mono font-bold mb-6">
+                  {formatTiempo(tiempoTranscurrido)}
+                </div>
+
+                <div className="space-x-4">
+                  <button
+                    onClick={() => manejarAccion('start')}
+                    disabled={estaActiva}
+                    className="btn bg-green-600 hover:bg-green-700"
+                  >
+                    Iniciar
+                  </button>
+                  <button
+                    onClick={() => manejarAccion('pause')}
+                    disabled={!estaActiva}
+                    className="btn bg-yellow-600 hover:bg-yellow-700"
+                  >
+                    Pausar
+                  </button>
+                  <button
+                    onClick={() => manejarAccion('stop')}
+                    className="btn bg-blue-600 hover:bg-blue-700"
+                  >
+                    Completar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {tarea.es_completada && (
+              <div className="text-center py-8 text-green-600 text-2xl">
+                TAREA COMPLETADA
+              </div>
+            )}
+
+            {sesion && (
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <strong>Sesión:</strong> {sesion.nombre}
+              </div>
+            )}
+
+            <button
+              onClick={eliminarTarea}
+              className="mt-6 btn bg-red-600 hover:bg-red-700"
+            >
+              Eliminar Tarea
+            </button>
+          </div>
         )}
       </div>
     </div>
-    </div>
-    </>
   );
 };
 
