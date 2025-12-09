@@ -1,13 +1,26 @@
-// supabase/functions/api.js  ← ¡JavaScript puro!
+// supabase/functions/api/index.ts  (o .js) – CON CORS TOTALMENTE FUNCIONAL
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const supabase = createClient(
-  Deno.env.get("SUPABASE_URL"),
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
 )
 
+// CORS Headers – permite Vercel, localhost y todo
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*", // Cambia a tu dominio en producción si querés más seguridad
+  "Access-Control-Allow-Headers": "Authorization, Content-Type, Accept",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Credentials": "true"
+}
+
 serve(async (req) => {
+  // Responder preflight OPTIONS automáticamente
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 200, headers: corsHeaders })
+  }
+
   const url = new URL(req.url)
   const path = url.pathname
   const method = req.method
@@ -25,11 +38,25 @@ serve(async (req) => {
   }
 
   try {
+    // Rutas públicas (sin auth)
+    if (method === "GET" && path.includes("/sesion-activa")) {
+      const { data, error } = await supabase
+        .from("sesiones")
+        .select("*, tareas(*)")
+        .eq("activa", true)
+        .single()
+
+      return new Response(JSON.stringify({ data, error: error?.message || null }), {
+        status: error ? 400 : 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      })
+    }
+
     // ====================== RUTAS PROTEGIDAS ======================
-    if (!userId && !path.includes("/sesion-activa")) {
+    if (!userId) {
       return new Response(JSON.stringify({ error: "Autenticación requerida" }), {
         status: 401,
-        headers: { "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       })
     }
 
@@ -42,9 +69,9 @@ serve(async (req) => {
         .select()
         .single()
 
-      return new Response(JSON.stringify({ data, error: error?.message }), {
+      return new Response(JSON.stringify({ data, error: error?.message || null }), {
         status: error ? 400 : 201,
-        headers: { "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       })
     }
 
@@ -56,9 +83,9 @@ serve(async (req) => {
         .eq("user_id", userId)
         .order("fecha_creacion", { ascending: false })
 
-      return new Response(JSON.stringify({ data, error: error?.message }), {
+      return new Response(JSON.stringify({ data, error: error?.message || null }), {
         status: error ? 400 : 200,
-        headers: { "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       })
     }
 
@@ -72,9 +99,9 @@ serve(async (req) => {
         .eq("user_id", userId)
         .single()
 
-      return new Response(JSON.stringify({ data, error: error?.message }), {
+      return new Response(JSON.stringify({ data, error: error?.message || null }), {
         status: error ? 404 : 200,
-        headers: { "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       })
     }
 
@@ -87,9 +114,9 @@ serve(async (req) => {
         .eq("id", id)
         .eq("user_id", userId)
 
-      return new Response(JSON.stringify({ success: !error, error: error?.message }), {
+      return new Response(JSON.stringify({ success: !error, error: error?.message || null }), {
         status: error ? 400 : 200,
-        headers: { "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       })
     }
 
@@ -110,16 +137,22 @@ serve(async (req) => {
         .select()
         .single()
 
-      return new Response(JSON.stringify({ data, error: error?.message }), {
+      return new Response(JSON.stringify({ data, error: error?.message || null }), {
         status: error ? 400 : 200,
-        headers: { "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       })
     }
 
     // Ruta no encontrada
-    return new Response(JSON.stringify({ error: "Ruta no encontrada" }), { status: 404 })
+    return new Response(JSON.stringify({ error: "Ruta no encontrada" }), {
+      status: 404,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    })
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 })
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    })
   }
 })
