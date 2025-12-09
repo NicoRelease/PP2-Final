@@ -5,12 +5,13 @@ import { supabase } from '../lib/supabase'; // Tu cliente Supabase
 import HeaderNoLink from './HeaderNoLink';
 import '../App.css';
 
-const API_URL = 'https://wkojgwlfvegdexspucq.supabase.co/functions/v1/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 const NewSessionForm = ({ onSesionCreada }) => {
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
+    user_id: '',
     nombre: '',
     fecha_examen: '',
     duracion_diaria_estimada: 60,
@@ -50,7 +51,17 @@ const NewSessionForm = ({ onSesionCreada }) => {
       setLoading(false);
       return;
     }
-    console.log("Form data sent to API antes del POST:", formData);
+
+    setFormData(prev => ({
+        ...prev,
+        user_id: session.user.id
+    }));
+
+    const finalData = {
+        ...formData,
+        user_id: session.user.id
+    };
+    console.log("Form data sent to API antes del POST:", finalData);
     try {
       const response = await fetch(`${API_URL}/sesiones`, {
         method: 'POST',
@@ -58,12 +69,9 @@ const NewSessionForm = ({ onSesionCreada }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({
-          ...formData,
-          user_id: session.user.id  // Supabase ya sabe quién eres
-        })
+        body: JSON.stringify(finalData)
       });
-      console.log("Form data sent to API:", formData);
+      console.log("Form data sent to API:", finalData);
       const result = await response.json();
 
       if (!response.ok) {

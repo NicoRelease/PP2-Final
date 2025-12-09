@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import HeaderNoLink from './HeaderNoLink';
 import '../App.css';
 
-const API_URL = 'https://wkojgwlfvegdexspucq.supabase.co/functions/v1/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 const TareaManager = () => {
   const { tareaId } = useParams();
