@@ -2,11 +2,26 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import HeaderNoLink from './HeaderNoLink';
 import '../App.css';
+import CryptoJS from 'crypto-js';
+
+
+const SECRET_KEY = import.meta.env.VITE_CLIENT_SECRET_KEY;
+// Función de Encriptación
+const encrypt = (text) => {
+    if (typeof CryptoJS !== 'undefined' && CryptoJS.AES) {
+    
+        return CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
+    }
+    
+    console.error("❌ ERROR: CryptoJS no disponible. La registración enviará datos sin cifrar.");
+    return text; 
+};
 
 
 export default function Register() {
+
     const navigate = useNavigate();
-    
+    const API_BASE_URL = import.meta.env.VITE_API_URL;
     // Estado para capturar los datos del formulario
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -26,17 +41,23 @@ export default function Register() {
         setLoading(true);
         setError('');
 console.log('Iniciando registro con:', { username, email, password });
+
+    const encryptedEmail = encrypt(email);
+    const encryptedPassword = encrypt(password);
+
+
+
         try {
             // 2. Llamada al backend: POST /register
-            const response = await fetch('http://localhost:3000/register', { 
+            const response = await fetch(`${API_BASE_URL}/register`, { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     username: username,
-                    email: email,
-                    password: password,
+                    encryptedEmail: encryptedEmail,
+                    encryptedPassword: encryptedPassword,
                 }),
             });
 console.log ('Respuesta del servidor:', response);

@@ -29,6 +29,7 @@ export default function Login() {
 
   const secretKey = 'clave-secreta-255bits';
   
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 
   // Función de Encriptación / Codificación
@@ -76,12 +77,13 @@ export default function Login() {
     setIsLoading(true);
 
     // La codificación/encriptación se realiza aquí, justo antes del fetch
+console.log('Datos del formulario: ', loginUser, loginPassword);
     const encryptedUser = encrypt(loginUser);
     const encryptedPassword = encrypt(loginPassword);
 
     try {
       // 💡 Nota: Se recomienda usar rutas relativas o un proxy para evitar problemas de CORS
-      const response = await fetch('http://localhost:3000/login', {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -23,15 +23,34 @@ const TareaManager = () => {
   const [intervalId, setIntervalId] = React.useState(null);
   const [modo, setModo] = React.useState('tarea-especifica');
 
-  const API_BASE_URL = 'http://localhost:3000/api';
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+  const getConfig = () => {
+    const authToken = localStorage.getItem('authToken');
+    console.log('🔑 Token en TareaManager:', authToken?.substring(0, 20) + '...');
+    
+    if (!authToken) {
+      console.error('❌ No hay token de autenticación');
+      navigate('/Login');
+    }
+    
+    return {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    };
+  };
 
   const cargarTareaDelDia = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await axios.get(`${API_BASE_URL}/tarea-del-dia/actual`);
-      console.log("Tarea del día actual-cargada:", response.data);
+  setLoading(true);
+  setError(null);
+  
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/tarea-del-dia/actual`,
+      getConfig() 
+    );
+    console.log("Tarea del día actual cargada:", response.data);
       if (response.data.tieneSesiones && response.data.tarea) {
         setTarea(response.data.tarea);
         setSesion(response.data.sesion);
@@ -54,7 +73,9 @@ const TareaManager = () => {
       if (tareaId) {
         setLoading(true);
         try {
-          const response = await axios.get(`${API_BASE_URL}/tareas/${tareaId}`);
+          const response = await axios.get(`${API_BASE_URL}/sesiones/tareas/${tareaId}`,
+            getConfig()
+          );
           console.log("Tarea específica por ID cargada:", response.data);
           setTarea(response.data);
           setSesion(response.data.sesion);
@@ -115,11 +136,13 @@ const TareaManager = () => {
           ? tiempoTranscurrido 
           : 0;
       
-      const response = await axios.post(`${API_BASE_URL}/tareas/${tarea.id}/gestionar`, {
+      const response = await axios.post(`${API_BASE_URL}/sesiones/tareas/${tarea.id}/gestionar`, {
        
         action: accion,
         tiempo_ejecutado: tiempoEjecutado
-      });
+      },
+      getConfig()
+      );
 
       if (accion === 'start') {
         setEstaActiva(true);
@@ -147,7 +170,9 @@ const TareaManager = () => {
     }
 
     try {
-      await axios.delete(`${API_BASE_URL}/tareas/${tarea.id}`);
+      await axios.delete(`${API_BASE_URL}/sesiones/tareas/${tarea.id}`,
+        getConfig()
+      );
       alert('Tarea eliminada exitosamente');
       
       if (modo === 'tarea-del-dia') {
