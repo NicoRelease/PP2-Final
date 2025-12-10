@@ -1,6 +1,5 @@
 // server.js 
 import cors from 'cors';
-import {connectDB} from './src/config/database.js';
 import db from './src/models/index.js'; 
 import authRouter from './src/routes/authroutes.js';
 import sesionesRouter from './src/routes/sesiones.routes.js';
